@@ -23,7 +23,7 @@ TKINC=-isystem /usr/include/tcl8.5
 # flags.
 
 CC=gcc
-CFLAGS=-Wall -O2
+CFLAGS=-Wall -O2 -DUSE_INTERP_RESULT
 
 ##################################################
 # You shouldn't need to modify anything below here

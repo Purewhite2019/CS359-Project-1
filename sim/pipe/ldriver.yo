@@ -77,69 +77,69 @@
                       | ###############################
   0x090:              | 	.align 4
   0x090:              | src:
-  0x090: ffffffff     | 	.long -1
+  0x090: 01000000     | 	.long 1
   0x094: 02000000     | 	.long 2
   0x098: 03000000     | 	.long 3
-  0x09c: fcffffff     | 	.long -4
+  0x09c: 04000000     | 	.long 4
   0x0a0: 05000000     | 	.long 5
-  0x0a4: 06000000     | 	.long 6
+  0x0a4: faffffff     | 	.long -6
   0x0a8: f9ffffff     | 	.long -7
-  0x0ac: 08000000     | 	.long 8
+  0x0ac: f8ffffff     | 	.long -8
   0x0b0: f7ffffff     | 	.long -9
-  0x0b4: f6ffffff     | 	.long -10
+  0x0b4: 0a000000     | 	.long 10
   0x0b8: 0b000000     | 	.long 11
-  0x0bc: f4ffffff     | 	.long -12
-  0x0c0: 0d000000     | 	.long 13
+  0x0bc: 0c000000     | 	.long 12
+  0x0c0: f3ffffff     | 	.long -13
   0x0c4: f2ffffff     | 	.long -14
   0x0c8: f1ffffff     | 	.long -15
-  0x0cc: 10000000     | 	.long 16
+  0x0cc: f0ffffff     | 	.long -16
   0x0d0: efffffff     | 	.long -17
   0x0d4: eeffffff     | 	.long -18
   0x0d8: 13000000     | 	.long 19
-  0x0dc: ecffffff     | 	.long -20
-  0x0e0: 15000000     | 	.long 21
+  0x0dc: 14000000     | 	.long 20
+  0x0e0: ebffffff     | 	.long -21
   0x0e4: eaffffff     | 	.long -22
-  0x0e8: 17000000     | 	.long 23
-  0x0ec: e8ffffff     | 	.long -24
-  0x0f0: e7ffffff     | 	.long -25
-  0x0f4: 1a000000     | 	.long 26
-  0x0f8: e5ffffff     | 	.long -27
-  0x0fc: 1c000000     | 	.long 28
+  0x0e8: e9ffffff     | 	.long -23
+  0x0ec: 18000000     | 	.long 24
+  0x0f0: 19000000     | 	.long 25
+  0x0f4: e6ffffff     | 	.long -26
+  0x0f8: 1b000000     | 	.long 27
+  0x0fc: e4ffffff     | 	.long -28
   0x100: 1d000000     | 	.long 29
-  0x104: 1e000000     | 	.long 30
+  0x104: e2ffffff     | 	.long -30
   0x108: 1f000000     | 	.long 31
-  0x10c: e0ffffff     | 	.long -32
-  0x110: dfffffff     | 	.long -33
+  0x10c: 20000000     | 	.long 32
+  0x110: 21000000     | 	.long 33
   0x114: 22000000     | 	.long 34
   0x118: ddffffff     | 	.long -35
-  0x11c: dcffffff     | 	.long -36
+  0x11c: 24000000     | 	.long 36
   0x120: 25000000     | 	.long 37
   0x124: 26000000     | 	.long 38
   0x128: d9ffffff     | 	.long -39
   0x12c: d8ffffff     | 	.long -40
   0x130: d7ffffff     | 	.long -41
-  0x134: d6ffffff     | 	.long -42
-  0x138: d5ffffff     | 	.long -43
-  0x13c: 2c000000     | 	.long 44
+  0x134: 2a000000     | 	.long 42
+  0x138: 2b000000     | 	.long 43
+  0x13c: d4ffffff     | 	.long -44
   0x140: 2d000000     | 	.long 45
-  0x144: 2e000000     | 	.long 46
-  0x148: d1ffffff     | 	.long -47
-  0x14c: 30000000     | 	.long 48
+  0x144: d2ffffff     | 	.long -46
+  0x148: 2f000000     | 	.long 47
+  0x14c: d0ffffff     | 	.long -48
   0x150: cfffffff     | 	.long -49
   0x154: ceffffff     | 	.long -50
   0x158: cdffffff     | 	.long -51
-  0x15c: ccffffff     | 	.long -52
-  0x160: cbffffff     | 	.long -53
+  0x15c: 34000000     | 	.long 52
+  0x160: 35000000     | 	.long 53
   0x164: caffffff     | 	.long -54
-  0x168: c9ffffff     | 	.long -55
+  0x168: 37000000     | 	.long 55
   0x16c: 38000000     | 	.long 56
-  0x170: 39000000     | 	.long 57
-  0x174: 3a000000     | 	.long 58
-  0x178: 3b000000     | 	.long 59
+  0x170: c7ffffff     | 	.long -57
+  0x174: c6ffffff     | 	.long -58
+  0x178: c5ffffff     | 	.long -59
   0x17c: 3c000000     | 	.long 60
   0x180: 3d000000     | 	.long 61
-  0x184: 3e000000     | 	.long 62
-  0x188: 3f000000     | 	.long 63
+  0x184: c2ffffff     | 	.long -62
+  0x188: c1ffffff     | 	.long -63
   0x18c: fadebc00     | 	.long 0xbcdefa # This shouldn't get moved
                       | 
   0x190:              | 	.align 16

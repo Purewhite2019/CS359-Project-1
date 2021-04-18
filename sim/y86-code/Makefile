@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -O2
+CFLAGS=-Wall -O2 -DUSE_INTERP_RESULT
 
 ISADIR = ../misc
 YAS=$(ISADIR)/yas
