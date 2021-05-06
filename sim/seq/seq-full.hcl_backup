@@ -1,22 +1,8 @@
-#/* $begin seq-full-hcl */
+#/* $begin seq-all-hcl */
 ####################################################################
 #  HCL Description of Control for Single Cycle Y86 Processor SEQ   #
 #  Copyright (C) Randal E. Bryant, David R. O'Hallaron, 2010       #
-#  "iaddl" instruction implemented by Qi Liu(519021910529)         #
 ####################################################################
-
-## Implementation Description:
-## iaddl V, rB: <[0xC](4 bit), [fn=0x0](4 bit), [0xF](4 bit), rB(4 bit), V(4 byte)> ~ 6 byte, reference: CS:APP2e, P452
-## Fetch: 		icode:ifun ← M(1)[PC]	(It seems that ifun doesn`t matter.)
-##		  		rA:rB ← M(1)[PC+1]	(In fact rA doesn`t matter at all.)
-##		  		valC ← M(4)[PC+2]
-##		  		valP ← PC+6
-## Decode: 		valB ← R[rB]
-## Execute: 	valE ← valB + valC
-##				Set CC
-## Memory:
-## Write Back: 	R[rB] ← valE
-## PC update:	PC ← valP
 
 ## Your task is to implement the iaddl instruction
 ## The file contains a declaration of the icodes
@@ -121,16 +107,16 @@ int ifun = [
 
 bool instr_valid = icode in 
 	{ INOP, IHALT, IRRMOVL, IIRMOVL, IRMMOVL, IMRMOVL,
-	       IOPL, IJXX, ICALL, IRET, IPUSHL, IPOPL, IIADDL };
+	       IOPL, IJXX, ICALL, IRET, IPUSHL, IPOPL };
 
 # Does fetched instruction require a regid byte?
 bool need_regids =
 	icode in { IRRMOVL, IOPL, IPUSHL, IPOPL, 
-		     IIRMOVL, IRMMOVL, IMRMOVL, IIADDL };
+		     IIRMOVL, IRMMOVL, IMRMOVL };
 
 # Does fetched instruction require a constant word?
 bool need_valC =
-	icode in { IIRMOVL, IRMMOVL, IMRMOVL, IJXX, ICALL, IIADDL };
+	icode in { IIRMOVL, IRMMOVL, IMRMOVL, IJXX, ICALL };
 
 ################ Decode Stage    ###################################
 
@@ -143,7 +129,7 @@ int srcA = [
 
 ## What register should be used as the B source?
 int srcB = [
-	icode in { IOPL, IRMMOVL, IMRMOVL, IIADDL  } : rB;
+	icode in { IOPL, IRMMOVL, IMRMOVL  } : rB;
 	icode in { IPUSHL, IPOPL, ICALL, IRET } : RESP;
 	1 : RNONE;  # Don't need register
 ];
@@ -151,7 +137,7 @@ int srcB = [
 ## What register should be used as the E destination?
 int dstE = [
 	icode in { IRRMOVL } && Cnd : rB;
-	icode in { IIRMOVL, IOPL, IIADDL} : rB;
+	icode in { IIRMOVL, IOPL} : rB;
 	icode in { IPUSHL, IPOPL, ICALL, IRET } : RESP;
 	1 : RNONE;  # Don't write any register
 ];
@@ -167,7 +153,7 @@ int dstM = [
 ## Select input A to ALU
 int aluA = [
 	icode in { IRRMOVL, IOPL } : valA;
-	icode in { IIRMOVL, IRMMOVL, IMRMOVL, IIADDL } : valC;
+	icode in { IIRMOVL, IRMMOVL, IMRMOVL } : valC;
 	icode in { ICALL, IPUSHL } : -4;
 	icode in { IRET, IPOPL } : 4;
 	# Other instructions don't need ALU
@@ -176,7 +162,7 @@ int aluA = [
 ## Select input B to ALU
 int aluB = [
 	icode in { IRMMOVL, IMRMOVL, IOPL, ICALL, 
-		      IPUSHL, IRET, IPOPL, IIADDL } : valB;
+		      IPUSHL, IRET, IPOPL } : valB;
 	icode in { IRRMOVL, IIRMOVL } : 0;
 	# Other instructions don't need ALU
 ];
@@ -188,7 +174,7 @@ int alufun = [
 ];
 
 ## Should the condition codes be updated?
-bool set_cc = icode in { IOPL, IIADDL };
+bool set_cc = icode in { IOPL };
 
 ################ Memory Stage    ###################################
 
@@ -236,4 +222,4 @@ int new_pc = [
 	# Default: Use incremented PC
 	1 : valP;
 ];
-#/* $end seq-full-hcl */
+#/* $end seq-all-hcl */
