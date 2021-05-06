@@ -38,24 +38,79 @@ ncopy:	pushl %ebp		# Save old frame pointer
 
 ##################################################################
 # You can modify this portion
-	# Loop header
+	# Loop_1 header
 	xorl %eax,%eax		# count = 0;
-	andl %edx,%edx		# len <= 0?
-	jle Done		# if so, goto Done:
+	iaddl $-8, %edx
+	jle Loop_8_Exit		# if(%edx - 8 <= 0) goto Loop_8_Exit
 
-Loop:	mrmovl (%ebx), %esi	# read val from src...
+Loop_8:
+	mrmovl (%ebx), %esi	# read val from src...
 	rmmovl %esi, (%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Npos		# if so, goto Npos:
-	irmovl $1, %edi
-	addl %edi, %eax		# count++
-Npos:	irmovl $1, %edi
-	subl %edi, %edx		# len--
-	irmovl $4, %edi
-	addl %edi, %ebx		# src++
-	addl %edi, %ecx		# dst++
-	andl %edx,%edx		# len > 0?
-	jg Loop			# if so, goto Loop:
+	jle Loop_8_Npos_1		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_8_Npos_1:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_8_Npos_2		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_8_Npos_2:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_8_Npos_3		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_8_Npos_3:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_8_Npos_4		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_8_Npos_4:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_8_Npos_5		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_8_Npos_5:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_8_Npos_6		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_8_Npos_6:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_8_Npos_7		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_8_Npos_7:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_8_Npos_8		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_8_Npos_8:
+	iaddl $32, %ebx
+	iaddl $32, %ecx
+	iaddl $-8, %edx
+	jg Loop_8			# if((%edx -= 8) <= 0) goto Loop_8_Exit
+
+Loop_8_Exit:
+	iaddl $8, %edx		# restore %edx
+	je Done				# if(%edx == 0) goto Done
+Loop_1:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_1_Npos		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	iaddl $1, %eax
+Loop_1_Npos:
+	iaddl $4, %ebx
+	iaddl $4, %ecx
+	iaddl $-1, %edx
+	jg Loop_1			# if so, goto Loop_1:
 ##################################################################
 # Do not modify the following section of code
 # Function epilogue.
@@ -78,9 +133,9 @@ EndFun:
 	.align 4
 src:
 	.long 1
-	.long 2
+	.long -2
 	.long -3
-	.long -4
+	.long 4
 	.long 0xbcdefa # This shouldn't get moved
 
 	.align 16

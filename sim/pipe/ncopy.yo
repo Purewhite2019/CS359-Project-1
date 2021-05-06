@@ -1,0 +1,61 @@
+                      | #/* $begin ncopy-ys */
+                      | ##################################################################
+                      | # ncopy.ys - Copy a src block of len ints to dst.
+                      | # Return the number of positive ints (>0) contained in src.
+                      | #
+                      | # Include your name and ID here.
+                      | #
+                      | # Describe how and why you modified the baseline code.
+                      | #
+                      | ##################################################################
+                      | # Do not modify this portion
+                      | # Function prologue.
+  0x000: a05f         | ncopy:	pushl %ebp		# Save old frame pointer
+  0x002: 2045         | 	rrmovl %esp,%ebp	# Set up new frame pointer
+  0x004: a06f         | 	pushl %esi		# Save callee-save regs
+  0x006: a03f         | 	pushl %ebx
+  0x008: a07f         | 	pushl %edi
+  0x00a: 503508000000 | 	mrmovl 8(%ebp),%ebx	# src
+  0x010: 502510000000 | 	mrmovl 16(%ebp),%edx	# len
+  0x016: 50150c000000 | 	mrmovl 12(%ebp),%ecx	# dst
+                      | 
+                      | ##################################################################
+                      | # You can modify this portion
+                      | 	# Loop header
+  0x01c: 6300         | 	xorl %eax,%eax		# count = 0;
+  0x01e: 6222         | 	andl %edx,%edx		# len <= 0?
+  0x020: 7159000000   | 	jle Done		# if so, goto Done:
+                      | 
+  0x025:              | Loop:
+  0x025: 506300000000 | 	mrmovl (%ebx), %esi	# read val from src...
+  0x02b: 406100000000 | 	rmmovl %esi, (%ecx)	# ...and store it to dst
+  0x031: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x033: 7140000000   | 	jle Npos		# if so, goto Npos:	TODO: delay slot?
+  0x038: 30f701000000 | 	irmovl $1, %edi
+  0x03e: 6070         | 	addl %edi, %eax		# count++
+                      | 	# iaddl $1, %eax
+  0x040:              | Npos:
+  0x040: 30f701000000 | 	irmovl $1, %edi
+  0x046: 6172         | 	subl %edi, %edx		# len--
+  0x048: 30f704000000 | 	irmovl $4, %edi
+  0x04e: 6073         | 	addl %edi, %ebx		# src++
+  0x050: 6071         | 	addl %edi, %ecx		# dst++
+                      | 	# iaddl $4, %ebx
+                      | 	# iaddl $4, %ecx
+                      | 	# iaddl $-1, %edx
+  0x052: 6222         | 	andl %edx,%edx		# len > 0?
+  0x054: 7625000000   | 	jg Loop			# if so, goto Loop:
+                      | ##################################################################
+                      | # Do not modify the following section of code
+                      | # Function epilogue.
+  0x059:              | Done:
+  0x059: b07f         | 	popl %edi               # Restore callee-save registers
+  0x05b: b03f         | 	popl %ebx
+  0x05d: b06f         | 	popl %esi
+  0x05f: 2054         | 	rrmovl %ebp, %esp
+  0x061: b05f         | 	popl %ebp
+  0x063: 90           | 	ret
+                      | ##################################################################
+                      | # Keep the following label at the end of your function
+  0x064:              | End:
+                      | #/* $end ncopy-ys */
