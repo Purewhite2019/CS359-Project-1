@@ -1,0 +1,54 @@
+# Written by Purewhite: purewhite@sjtu.edu.cn
+
+.pos 0
+    irmovl stack, %esp
+    irmovl stack, %ebp
+    call main
+    halt
+
+.align 4
+src:
+    .long 0x00a
+    .long 0x0b0
+    .long 0xc00
+dest:
+    .long 0x111
+    .long 0x222
+    .long 0x333
+
+main:
+    irmovl src, %esi
+    irmovl dest, %edi
+    irmovl $3, %ecx
+    call copy
+    ret
+
+# int copy(int *src, int *dest, int len): ret(%eax), src(%esi), dest(%edi), len(%ecx)
+copy:
+    # int result = 0;
+    xorl %eax, %eax
+    jmp test
+loop:
+    # int val = *src; *dest = val
+    mrmovl (%esi), %edx
+    rmmovl %edx, (%edi)
+
+    # result ^= val
+    xorl %edx, %eax
+
+    # src++; dest++;
+    irmovl $4, %edx
+    addl %edx, %esi
+    addl %edx, %edi
+
+    # len--
+    irmovl $-1, %edx
+    addl %edx, %ecx
+test:
+    # if(len == 0) return result;
+    andl %ecx, %ecx
+    jne loop
+    ret
+
+.pos 0x100
+stack:

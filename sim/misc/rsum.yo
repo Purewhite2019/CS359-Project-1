@@ -1,0 +1,45 @@
+  0x000:              | .pos 0
+  0x000: 30f400010000 |     irmovl stack, %esp
+  0x006: 30f500010000 |     irmovl stack, %ebp
+  0x00c: 802c000000   |     call main
+  0x011: 00           |     halt
+                      | 
+                      | # Sample linked list
+  0x014:              | .align 4
+  0x014:              | ele1:
+  0x014: 0a000000     |     .long 0x00a
+  0x018: 1c000000     |     .long ele2
+  0x01c:              | ele2:
+  0x01c: b0000000     |     .long 0x0b0
+  0x020: 24000000     |     .long ele3
+  0x024:              | ele3:
+  0x024: 000c0000     |     .long 0xc00
+  0x028: 00000000     |     .long 0    
+                      | 
+  0x02c:              | main:
+  0x02c: 30f714000000 |     irmovl ele1, %edi
+  0x032: 8038000000   |     call rsum
+  0x037: 90           |     ret
+                      | 
+                      | # rsum(), list_ptr ls in %edi
+  0x038:              | rsum:
+                      |     # int val = 0
+  0x038: 6300         |     xorl %eax, %eax
+                      |     #if (edi == nullptr) return 0;
+  0x03a: 6277         |     andl %edi, %edi
+  0x03c: 7358000000   |     je exit
+                      | 
+                      |     # cur = *edi
+  0x041: 503700000000 |     mrmovl (%edi), %ebx 
+                      |     # edi = edi->next
+  0x047: 507704000000 |     mrmovl 4(%edi), %edi
+                      |     # val = rsum(edi) + cur
+  0x04d: a03f         |     pushl %ebx
+  0x04f: 8038000000   |     call rsum
+  0x054: b03f         |     popl %ebx
+  0x056: 6030         |     addl %ebx, %eax
+  0x058:              | exit:
+  0x058: 90           |     ret
+                      | 
+  0x100:              | .pos 0x100
+  0x100:              | stack:

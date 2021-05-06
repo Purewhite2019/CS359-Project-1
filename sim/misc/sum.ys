@@ -1,0 +1,45 @@
+# Written by Purewhite: purewhite@sjtu.edu.cn
+
+.pos 0
+    irmovl stack, %esp
+    irmovl stack, %ebp
+    call main
+    halt
+
+# Sample linked list
+.align 4
+ele1:
+    .long 0x00a
+    .long ele2
+ele2:
+    .long 0x0b0
+    .long ele3
+ele3:
+    .long 0xc00
+    .long 0    
+
+main:
+    irmovl ele1, %edi
+    call sum
+    ret
+
+# sum(), list_ptr ls in %edi
+sum:
+    # int val = 0
+    xorl %eax, %eax
+    jmp test
+loop:
+    # ebx = *edi
+    mrmovl (%edi), %ebx 
+    # val = val + *edi
+    addl %ebx, %eax
+    # edi = edi->next
+    mrmovl 4(%edi), %edi
+test:
+    #if (edi != nullptr) goto loop;
+    andl %edi, %edi
+    jne loop
+    ret
+
+.pos 0x100
+stack:
