@@ -1,9 +1,12 @@
 # Written by Purewhite: purewhite@sjtu.edu.cn
+# Using cdecl
+# Since "ret $4" doesn`t works at all,
+# we will use "iaddl" to conveniently free the space used by params
 
 .pos 0
     irmovl stack, %esp
     irmovl stack, %ebp
-    call main
+    call Main
     halt
 
 .align 4
@@ -16,19 +19,51 @@ dest:
     .long 0x222
     .long 0x333
 
-main:
-    irmovl src, %esi
-    irmovl dest, %edi
-    irmovl $3, %ecx
-    call copy
-    ret
+Main:
+    # Function prologue
+    pushl %ebp
+    rrmovl %esp, %ebp
+
+    # Function body
+    # push the params from right to left
+    irmovl $3, %eax
+    pushl %eax
+    irmovl dest, %eax
+    pushl %eax
+    irmovl src, %eax
+    pushl %eax
+
+    call Copy
+    iaddl $12, %esp  # "ret $4" doesn`t works at all.
+                    # We must use "iaddl" to conveniently free the space used by params
+
+    # Function epilogue
+	rrmovl %ebp,%esp
+	popl %ebp
+	ret 
 
 # int copy(int *src, int *dest, int len): ret(%eax), src(%esi), dest(%edi), len(%ecx)
-copy:
+Copy:
+    # Function prologue
+    # Save stack pointers
+    pushl %ebp
+    rrmovl %esp, %ebp
+    # Save callee-save regs
+    pushl %ecx
+    pushl %edx
+    pushl %esi
+    pushl %edi
+    # pop the params from left to right
+    # %esi = src, %edi = dest, %ecx = len
+    mrmovl 8(%ebp), %esi
+    mrmovl 12(%ebp), %edi
+    mrmovl 16(%ebp), %ecx
+
+    # Function body
     # int result = 0;
     xorl %eax, %eax
-    jmp test
-loop:
+    jmp Copy_test
+Copy_loop:
     # int val = *src; *dest = val
     mrmovl (%esi), %edx
     rmmovl %edx, (%edi)
@@ -44,11 +79,21 @@ loop:
     # len--
     irmovl $-1, %edx
     addl %edx, %ecx
-test:
+Copy_test:
     # if(len == 0) return result;
     andl %ecx, %ecx
-    jne loop
-    ret
+    jne Copy_loop
+
+    # Function epilogue
+    # Restore callee-save registers
+    pushl %edi
+    pushl %esi
+    pushl %edx
+    pushl %ecx
+    # Restore stack pointers
+    rrmovl %ebp, %esp
+    popl %ebp
+    ret   # It seems that "ret $Val" doesn`t works at all!
 
 .pos 0x100
 stack:
