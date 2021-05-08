@@ -116,7 +116,7 @@
   0x155: c0f330000000 | 	iaddl $48, %ebx
   0x15b: c0f130000000 | 	iaddl $48, %ecx
   0x161: c0f2f4ffffff | 	iaddl $-12, %edx
-  0x167: 7529000000   | 	jge Loop_12			# if((%edx -= 8) <= 0) goto Loop_12_Exit
+  0x167: 7529000000   | 	jge Loop_12
                       | 
   0x16c:              | Loop_12_Exit:
   0x16c: 6022         | 	addl %edx, %edx
@@ -125,6 +125,11 @@
   0x176: a06f         | 	pushl %esi
   0x178: 90           | 	ret
                       | 
+                      | # Handle the number of remaining elements according to whether it is even or odd.
+                      | # to maximize code reuse (minimize the space)
+                      | # while in the meantime minimizing the load-and-use hazzard to maximize the speed.
+                      | 
+                      | # When len is even,
   0x179:              | Remain_10:
   0x179: 506324000000 | 	mrmovl 36(%ebx), %esi	# read val from src...
   0x17f: 507320000000 | 	mrmovl 32(%ebx), %edi	# read val from src...
@@ -135,7 +140,7 @@
   0x198: c0f001000000 | 	iaddl $1, %eax
   0x19e:              | Remain_10_Npos_10:
   0x19e: 6277         | 	andl %edi, %edi		# val <= 0?
-  0x1a0: 710f020000   | 	jle Remain_4
+  0x1a0: 71ab010000   | 	jle Remain_8
   0x1a5: c0f001000000 | 	iaddl $1, %eax
                       | 
   0x1ab:              | Remain_8:
@@ -148,7 +153,7 @@
   0x1ca: c0f001000000 | 	iaddl $1, %eax
   0x1d0:              | Remain_8_Npos_8:
   0x1d0: 6277         | 	andl %edi, %edi		# val <= 0?
-  0x1d2: 710f020000   | 	jle Remain_4
+  0x1d2: 71dd010000   | 	jle Remain_6
   0x1d7: c0f001000000 | 	iaddl $1, %eax
                       | 
                       | 
@@ -192,6 +197,7 @@
   0x26d: c0f001000000 | 	iaddl $1, %eax
   0x273: 708b030000   |     jmp Done
                       | 
+                      | # When len is odd,
   0x278:              | Remain_11:
   0x278: 506328000000 | 	mrmovl 40(%ebx), %esi	# read val from src...
   0x27e: 507324000000 | 	mrmovl 36(%ebx), %edi	# read val from src...
@@ -217,8 +223,6 @@
   0x2cf: 6277         | 	andl %edi, %edi		# val <= 0?
   0x2d1: 71dc020000   | 	jle Remain_7
   0x2d6: c0f001000000 | 	iaddl $1, %eax
-                      | 
-                      | 
                       | 
   0x2dc:              | Remain_7:
   0x2dc: 506318000000 | 	mrmovl 24(%ebx), %esi	# read val from src...
@@ -265,7 +269,6 @@
   0x37e: 6266         | 	andl %esi, %esi		# val <= 0?
   0x380: 718b030000   | 	jle Done
   0x385: c0f001000000 | 	iaddl $1, %eax
-                      | 
                       | 
                       | ##################################################################
                       | # Do not modify the following section of code

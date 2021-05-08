@@ -116,7 +116,7 @@ Loop_12_Npos_12:
 	iaddl $48, %ebx
 	iaddl $48, %ecx
 	iaddl $-12, %edx
-	jge Loop_12			# if((%edx -= 8) <= 0) goto Loop_12_Exit
+	jge Loop_12
 
 Loop_12_Exit:
 	addl %edx, %edx
@@ -125,6 +125,11 @@ Loop_12_Exit:
 	pushl %esi
 	ret
 
+# Handle the number of remaining elements according to whether it is even or odd.
+# to maximize code reuse (minimize the space)
+# while in the meantime minimizing the load-and-use hazzard to maximize the speed.
+
+# When len is even,
 Remain_10:
 	mrmovl 36(%ebx), %esi	# read val from src...
 	mrmovl 32(%ebx), %edi	# read val from src...
@@ -192,6 +197,7 @@ Remain_6_Npos_2:
 	iaddl $1, %eax
     jmp Done
 
+# When len is odd,
 Remain_11:
 	mrmovl 40(%ebx), %esi	# read val from src...
 	mrmovl 36(%ebx), %edi	# read val from src...
@@ -217,8 +223,6 @@ Remain_9_Npos:
 	andl %edi, %edi		# val <= 0?
 	jle Remain_7
 	iaddl $1, %eax
-
-
 
 Remain_7:
 	mrmovl 24(%ebx), %esi	# read val from src...
@@ -265,7 +269,6 @@ Remain_1:
 	andl %esi, %esi		# val <= 0?
 	jle Done
 	iaddl $1, %eax
-
 
 ##################################################################
 # Do not modify the following section of code

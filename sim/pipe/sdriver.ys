@@ -48,100 +48,243 @@ ncopy:	pushl %ebp		# Save old frame pointer
 # You can modify this portion
 	# Loop_1 header
 	xorl %eax,%eax		# count = 0;
-	iaddl $-8, %edx
-	jl Loop_8_Exit		# if(%edx - 8 <= 0) goto Loop_8_Exit
+	iaddl $-12, %edx
+	jl Loop_12_Exit		# if(%edx - 8 <= 0) goto Loop_12_Exit
 
-Loop_8:
+Loop_12:
 	mrmovl (%ebx), %esi	# read val from src...
 	mrmovl 4(%ebx), %edi	# read val from src...
 	rmmovl %esi, (%ecx)	# ...and store it to dst
 	rmmovl %edi, 4(%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_1
+	jle Loop_12_Npos_1
 	iaddl $1, %eax
-Loop_8_Npos_1:
+Loop_12_Npos_1:
 	andl %edi, %edi		# val <= 0?
-	jle Loop_8_Npos_2
+	jle Loop_12_Npos_2
 	iaddl $1, %eax
 
-Loop_8_Npos_2:
+Loop_12_Npos_2:
 	mrmovl 8(%ebx), %esi	# read val from src...
 	mrmovl 12(%ebx), %edi	# read val from src...
 	rmmovl %esi, 8(%ecx)	# ...and store it to dst
 	rmmovl %edi, 12(%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_3
+	jle Loop_12_Npos_3
 	iaddl $1, %eax
-Loop_8_Npos_3:
+Loop_12_Npos_3:
 	andl %edi, %edi		# val <= 0?
-	jle Loop_8_Npos_4
+	jle Loop_12_Npos_4
 	iaddl $1, %eax
 
-Loop_8_Npos_4:
+Loop_12_Npos_4:
 	mrmovl 16(%ebx), %esi	# read val from src...
 	mrmovl 20(%ebx), %edi	# read val from src...
 	rmmovl %esi, 16(%ecx)	# ...and store it to dst
 	rmmovl %edi, 20(%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_5
+	jle Loop_12_Npos_5
 	iaddl $1, %eax
-Loop_8_Npos_5:
+Loop_12_Npos_5:
 	andl %edi, %edi		# val <= 0?
-	jle Loop_8_Npos_6
+	jle Loop_12_Npos_6
 	iaddl $1, %eax
 
-Loop_8_Npos_6:
+Loop_12_Npos_6:
 	mrmovl 24(%ebx), %esi	# read val from src...
 	mrmovl 28(%ebx), %edi	# read val from src...
 	rmmovl %esi, 24(%ecx)	# ...and store it to dst
 	rmmovl %edi, 28(%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_7
+	jle Loop_12_Npos_7
 	iaddl $1, %eax
-Loop_8_Npos_7:
+Loop_12_Npos_7:
 	andl %edi, %edi		# val <= 0?
-	jle Loop_8_Npos_8
+	jle Loop_12_Npos_8
 	iaddl $1, %eax
 
-Loop_8_Npos_8:
-	iaddl $32, %ebx
-	iaddl $32, %ecx
-	iaddl $-8, %edx
-	jg Loop_8			# if((%edx -= 8) <= 0) goto Loop_8_Exit
+Loop_12_Npos_8:
+	mrmovl 32(%ebx), %esi	# read val from src...
+	mrmovl 36(%ebx), %edi	# read val from src...
+	rmmovl %esi, 32(%ecx)	# ...and store it to dst
+	rmmovl %edi, 36(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_12_Npos_9
+	iaddl $1, %eax
+Loop_12_Npos_9:
+	andl %edi, %edi		# val <= 0?
+	jle Loop_12_Npos_10
+	iaddl $1, %eax
 
-Loop_8_Exit:
-	iaddl $8, %edx		# restore %edx
-	je Done				# if(%edx == 0) goto Done
+Loop_12_Npos_10:
+	mrmovl 40(%ebx), %esi	# read val from src...
+	mrmovl 44(%ebx), %edi	# read val from src...
+	rmmovl %esi, 40(%ecx)	# ...and store it to dst
+	rmmovl %edi, 44(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Loop_12_Npos_11
+	iaddl $1, %eax
+Loop_12_Npos_11:
+	andl %edi, %edi		# val <= 0?
+	jle Loop_12_Npos_12
+	iaddl $1, %eax
 
-# Loop_1:
-# 	mrmovl (%ebx), %esi	# read val from src...
-# 	andl %esi, %esi		# val <= 0?
-# 	rmmovl %esi, (%ecx)	# ...and store it to dst
-# 	jle Loop_1_Npos		# if so, goto Loop_1_Npos:
-# 	iaddl $1, %eax
-# Loop_1_Npos:
-# 	iaddl $4, %ebx
-# 	iaddl $4, %ecx
-# 	iaddl $-1, %edx
-# 	jg Loop_1			# if so, goto Loop_1:
+Loop_12_Npos_12:
+	iaddl $48, %ebx
+	iaddl $48, %ecx
+	iaddl $-12, %edx
+	jge Loop_12
 
-Loop_1:
+Loop_12_Exit:
+	addl %edx, %edx
+	addl %edx, %edx		# %edx = 4 * (len - 8)
+	mrmovl Table(%edx), %esi
+	pushl %esi
+	ret
+
+# Handle the number of remaining elements according to whether it is even or odd.
+# to maximize code reuse (minimize the space)
+# while in the meantime minimizing the load-and-use hazzard to maximize the speed.
+
+# When len is even,
+Remain_10:
+	mrmovl 36(%ebx), %esi	# read val from src...
+	mrmovl 32(%ebx), %edi	# read val from src...
+	rmmovl %esi, 36(%ecx)	# ...and store it to dst
+	rmmovl %edi, 32(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_10_Npos_10
+	iaddl $1, %eax
+Remain_10_Npos_10:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_8
+	iaddl $1, %eax
+
+Remain_8:
+	mrmovl 28(%ebx), %esi	# read val from src...
+	mrmovl 24(%ebx), %edi	# read val from src...
+	rmmovl %esi, 28(%ecx)	# ...and store it to dst
+	rmmovl %edi, 24(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_8_Npos_8
+	iaddl $1, %eax
+Remain_8_Npos_8:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_6
+	iaddl $1, %eax
+
+
+Remain_6:
+	mrmovl 20(%ebx), %esi	# read val from src...
+	mrmovl 16(%ebx), %edi	# read val from src...
+	rmmovl %esi, 20(%ecx)	# ...and store it to dst
+	rmmovl %edi, 16(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_6
+	iaddl $1, %eax
+Remain_6_Npos_6:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_4
+	iaddl $1, %eax
+
+Remain_4:
+	mrmovl 12(%ebx), %esi	# read val from src...
+	mrmovl 8(%ebx), %edi	# read val from src...
+	rmmovl %esi, 12(%ecx)	# ...and store it to dst
+	rmmovl %edi, 8(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_4
+	iaddl $1, %eax
+Remain_6_Npos_4:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_2
+	iaddl $1, %eax
+
+Remain_2:
+	mrmovl 4(%ebx), %esi	# read val from src...
+	mrmovl (%ebx), %edi	# read val from src...
+	rmmovl %esi, 4(%ecx)	# ...and store it to dst
+	rmmovl %edi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_2
+	iaddl $1, %eax
+Remain_6_Npos_2:
+	andl %edi, %edi		# val <= 0?
+	jle Done
+	iaddl $1, %eax
+    jmp Done
+
+# When len is odd,
+Remain_11:
+	mrmovl 40(%ebx), %esi	# read val from src...
+	mrmovl 36(%ebx), %edi	# read val from src...
+	rmmovl %esi, 40(%ecx)	# ...and store it to dst
+	rmmovl %edi, 36(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_11_Npos
+	iaddl $1, %eax
+Remain_11_Npos:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_9
+	iaddl $1, %eax
+
+Remain_9:
+	mrmovl 32(%ebx), %esi	# read val from src...
+	mrmovl 28(%ebx), %edi	# read val from src...
+	rmmovl %esi, 32(%ecx)	# ...and store it to dst
+	rmmovl %edi, 28(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_9_Npos
+	iaddl $1, %eax
+Remain_9_Npos:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_7
+	iaddl $1, %eax
+
+Remain_7:
+	mrmovl 24(%ebx), %esi	# read val from src...
+	mrmovl 20(%ebx), %edi	# read val from src...
+	rmmovl %esi, 24(%ecx)	# ...and store it to dst
+	rmmovl %edi, 20(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_1
+	iaddl $1, %eax
+Remain_7_Npos_1:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_5
+	iaddl $1, %eax
+
+Remain_5:
+	mrmovl 16(%ebx), %esi	# read val from src...
+	mrmovl 12(%ebx), %edi	# read val from src...
+	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+	rmmovl %edi, 12(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_3
+	iaddl $1, %eax
+Remain_7_Npos_3:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_3
+	iaddl $1, %eax
+
+Remain_3:
+	mrmovl 8(%ebx), %esi	# read val from src...
+	mrmovl 4(%ebx), %edi	# read val from src...
+	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_5
+	iaddl $1, %eax
+Remain_7_Npos_5:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_1
+	iaddl $1, %eax
+
+Remain_1:
 	mrmovl (%ebx), %esi	# read val from src...
-	iaddl $-1, %edx
-	je Loop_1_Exit			# if so, goto Loop_1_Exit:
-	andl %esi, %esi		# val <= 0?
 	rmmovl %esi, (%ecx)	# ...and store it to dst
-	jle Loop_1_Npos		# if so, goto Loop_1_Npos:
-	iaddl $1, %eax
-Loop_1_Npos:
-	iaddl $4, %ebx
-	iaddl $4, %ecx
-	jmp Loop_1:
-
-Loop_1_Exit:
 	andl %esi, %esi		# val <= 0?
-	rmmovl %esi, (%ecx)	# ...and store it to dst
-	jle Done 			# if so, goto Loop_1_Npos:
+	jle Done
 	iaddl $1, %eax
 
 ##################################################################
@@ -156,6 +299,21 @@ Done:
 	ret
 ##################################################################
 # Keep the following label at the end of your function
+	.align 4
+	.long Done
+	.long Remain_1
+	.long Remain_2
+	.long Remain_3
+	.long Remain_4
+	.long Remain_5
+	.long Remain_6
+	.long Remain_7
+	.long Remain_8
+	.long Remain_9
+	.long Remain_10
+	.long Remain_11
+Table:
+
 End:
 #/* $end ncopy-ys */
 EndFun:
@@ -165,9 +323,9 @@ EndFun:
 ###############################
 	.align 4
 src:
-	.long 1
+	.long -1
 	.long 2
-	.long -3
+	.long 3
 	.long -4
 	.long 0xbcdefa # This shouldn't get moved
 
