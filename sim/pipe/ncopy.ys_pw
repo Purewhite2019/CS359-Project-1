@@ -1,20 +1,3 @@
-#######################################################################
-# Test for copying block of size 4;
-#######################################################################
-	.pos 0
-main:	irmovl Stack, %esp  	# Set up stack pointer
-	irmovl Stack, %ebp  	# Set up base pointer
-
-	# Set up arguments for copy function and then invoke it
-	irmovl $4, %eax		# src and dst have 4 elements
-	pushl %eax
-	irmovl dest, %eax	# dst array
-	pushl %eax
-	irmovl src, %eax	# src array
-	pushl %eax
-	call ncopy		 
-	halt			# should halt with num nonzeros in %eax
-StartFun:
 #/* $begin ncopy-ys */
 ##################################################################
 # ncopy.ys - Copy a src block of len ints to dst.
@@ -136,7 +119,7 @@ Loop_1:
 Loop_1_Npos:
 	iaddl $4, %ebx
 	iaddl $4, %ecx
-	jmp Loop_1:
+	jmp Loop_1
 
 Loop_1_Exit:
 	andl %esi, %esi		# val <= 0?
@@ -158,47 +141,3 @@ Done:
 # Keep the following label at the end of your function
 End:
 #/* $end ncopy-ys */
-EndFun:
-
-###############################
-# Source and destination blocks 
-###############################
-	.align 4
-src:
-	.long 1
-	.long 2
-	.long -3
-	.long -4
-	.long 0xbcdefa # This shouldn't get moved
-
-	.align 16
-Predest:
-	.long 0xbcdefa
-dest:
-	.long 0xcdefab
-	.long 0xcdefab
-	.long 0xcdefab
-	.long 0xcdefab
-Postdest:
-	.long 0xdefabc
-
-.align 4
-# Run time stack
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-
-Stack:

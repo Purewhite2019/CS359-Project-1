@@ -90,42 +90,101 @@ Loop_8_Npos_8:
 	iaddl $32, %ebx
 	iaddl $32, %ecx
 	iaddl $-8, %edx
-	jg Loop_8			# if((%edx -= 8) <= 0) goto Loop_8_Exit
+	jge Loop_8			# if((%edx -= 8) <= 0) goto Loop_8_Exit
 
 Loop_8_Exit:
-	iaddl $8, %edx		# restore %edx
-	je Done				# if(%edx == 0) goto Done
+	addl %edx, %edx
+	addl %edx, %edx		# %edx = 4 * (len - 8)
+	mrmovl Table(%edx), %esi
+	pushl %esi
+	ret
 
-# Loop_1:
-# 	mrmovl (%ebx), %esi	# read val from src...
-# 	andl %esi, %esi		# val <= 0?
-# 	rmmovl %esi, (%ecx)	# ...and store it to dst
-# 	jle Loop_1_Npos		# if so, goto Loop_1_Npos:
-# 	iaddl $1, %eax
-# Loop_1_Npos:
-# 	iaddl $4, %ebx
-# 	iaddl $4, %ecx
-# 	iaddl $-1, %edx
-# 	jg Loop_1			# if so, goto Loop_1:
+Remain_6:
+	mrmovl 20(%ebx), %esi	# read val from src...
+	mrmovl 16(%ebx), %edi	# read val from src...
+	rmmovl %esi, 20(%ecx)	# ...and store it to dst
+	rmmovl %edi, 16(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_6
+	iaddl $1, %eax
+Remain_6_Npos_6:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_4
+	iaddl $1, %eax
 
-Loop_1:
+Remain_4:
+	mrmovl 12(%ebx), %esi	# read val from src...
+	mrmovl 8(%ebx), %edi	# read val from src...
+	rmmovl %esi, 12(%ecx)	# ...and store it to dst
+	rmmovl %edi, 8(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_4
+	iaddl $1, %eax
+Remain_6_Npos_4:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_2
+	iaddl $1, %eax
+
+Remain_2:
+	mrmovl 4(%ebx), %esi	# read val from src...
+	mrmovl (%ebx), %edi	# read val from src...
+	rmmovl %esi, 4(%ecx)	# ...and store it to dst
+	rmmovl %edi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_2
+	iaddl $1, %eax
+Remain_6_Npos_2:
+	andl %edi, %edi		# val <= 0?
+	jle Done
+	iaddl $1, %eax
+    jmp Done
+
+Remain_7:
+	mrmovl 24(%ebx), %esi	# read val from src...
+	mrmovl 20(%ebx), %edi	# read val from src...
+	rmmovl %esi, 24(%ecx)	# ...and store it to dst
+	rmmovl %edi, 20(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_1
+	iaddl $1, %eax
+Remain_7_Npos_1:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_5
+	iaddl $1, %eax
+
+Remain_5:
+	mrmovl 16(%ebx), %esi	# read val from src...
+	mrmovl 12(%ebx), %edi	# read val from src...
+	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+	rmmovl %edi, 12(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_3
+	iaddl $1, %eax
+Remain_7_Npos_3:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_3
+	iaddl $1, %eax
+
+Remain_3:
+	mrmovl 8(%ebx), %esi	# read val from src...
+	mrmovl 4(%ebx), %edi	# read val from src...
+	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_5
+	iaddl $1, %eax
+Remain_7_Npos_5:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_1
+	iaddl $1, %eax
+
+Remain_1:
 	mrmovl (%ebx), %esi	# read val from src...
-	iaddl $-1, %edx
-	je Loop_1_Exit			# if so, goto Loop_1_Exit:
-	andl %esi, %esi		# val <= 0?
 	rmmovl %esi, (%ecx)	# ...and store it to dst
-	jle Loop_1_Npos		# if so, goto Loop_1_Npos:
+	andl %esi, %esi		# val <= 0?
+	jle Done
 	iaddl $1, %eax
-Loop_1_Npos:
-	iaddl $4, %ebx
-	iaddl $4, %ecx
-	jmp Loop_1:
 
-Loop_1_Exit:
-	andl %esi, %esi		# val <= 0?
-	rmmovl %esi, (%ecx)	# ...and store it to dst
-	jle Done 			# if so, goto Loop_1_Npos:
-	iaddl $1, %eax
 
 ##################################################################
 # Do not modify the following section of code
@@ -139,5 +198,16 @@ Done:
 	ret
 ##################################################################
 # Keep the following label at the end of your function
+	.align 4
+	.long Done
+	.long Remain_1
+	.long Remain_2
+	.long Remain_3
+	.long Remain_4
+	.long Remain_5
+	.long Remain_6
+	.long Remain_7
+Table:
+
 End:
 #/* $end ncopy-ys */

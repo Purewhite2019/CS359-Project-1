@@ -20,9 +20,17 @@ StartFun:
 # ncopy.ys - Copy a src block of len ints to dst.
 # Return the number of positive ints (>0) contained in src.
 #
-# Include your name and ID here.
+# Author: Qi Liu(519021910529)
 #
-# Describe how and why you modified the baseline code.
+# Modification:
+#	1) Added iaddl instruction and used that in the program.
+#	2) Loop unrolling
+#	3) Reordered some instructions to remove redundant ones.
+#	4) In Loop 8, seperate the load into %esi and use of %esi by mixing with %edi.
+#	5) In Loop 1, seperate the load into %esi and use of %esi by reordering. (only marginal improvement, from 9.83 to 9.81.)
+#
+# Pity:
+#	1) Delay slot is unable because other test cases can`t be adjusted to it.
 #
 ##################################################################
 # Do not modify this portion
@@ -41,56 +49,60 @@ ncopy:	pushl %ebp		# Save old frame pointer
 	# Loop_1 header
 	xorl %eax,%eax		# count = 0;
 	iaddl $-8, %edx
-	jle Loop_8_Exit		# if(%edx - 8 <= 0) goto Loop_8_Exit
+	jl Loop_8_Exit		# if(%edx - 8 <= 0) goto Loop_8_Exit
 
 Loop_8:
 	mrmovl (%ebx), %esi	# read val from src...
+	mrmovl 4(%ebx), %edi	# read val from src...
 	rmmovl %esi, (%ecx)	# ...and store it to dst
+	rmmovl %edi, 4(%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_1		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	jle Loop_8_Npos_1
 	iaddl $1, %eax
 Loop_8_Npos_1:
-	mrmovl (%ebx), %esi	# read val from src...
-	rmmovl %esi, (%ecx)	# ...and store it to dst
-	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_2		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	andl %edi, %edi		# val <= 0?
+	jle Loop_8_Npos_2
 	iaddl $1, %eax
+
 Loop_8_Npos_2:
-	mrmovl (%ebx), %esi	# read val from src...
-	rmmovl %esi, (%ecx)	# ...and store it to dst
+	mrmovl 8(%ebx), %esi	# read val from src...
+	mrmovl 12(%ebx), %edi	# read val from src...
+	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+	rmmovl %edi, 12(%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_3		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	jle Loop_8_Npos_3
 	iaddl $1, %eax
 Loop_8_Npos_3:
-	mrmovl (%ebx), %esi	# read val from src...
-	rmmovl %esi, (%ecx)	# ...and store it to dst
-	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_4		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	andl %edi, %edi		# val <= 0?
+	jle Loop_8_Npos_4
 	iaddl $1, %eax
+
 Loop_8_Npos_4:
-	mrmovl (%ebx), %esi	# read val from src...
-	rmmovl %esi, (%ecx)	# ...and store it to dst
+	mrmovl 16(%ebx), %esi	# read val from src...
+	mrmovl 20(%ebx), %edi	# read val from src...
+	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+	rmmovl %edi, 20(%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_5		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	jle Loop_8_Npos_5
 	iaddl $1, %eax
 Loop_8_Npos_5:
-	mrmovl (%ebx), %esi	# read val from src...
-	rmmovl %esi, (%ecx)	# ...and store it to dst
-	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_6		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	andl %edi, %edi		# val <= 0?
+	jle Loop_8_Npos_6
 	iaddl $1, %eax
+
 Loop_8_Npos_6:
-	mrmovl (%ebx), %esi	# read val from src...
-	rmmovl %esi, (%ecx)	# ...and store it to dst
+	mrmovl 24(%ebx), %esi	# read val from src...
+	mrmovl 28(%ebx), %edi	# read val from src...
+	rmmovl %esi, 24(%ecx)	# ...and store it to dst
+	rmmovl %edi, 28(%ecx)	# ...and store it to dst
 	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_7		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	jle Loop_8_Npos_7
 	iaddl $1, %eax
 Loop_8_Npos_7:
-	mrmovl (%ebx), %esi	# read val from src...
-	rmmovl %esi, (%ecx)	# ...and store it to dst
-	andl %esi, %esi		# val <= 0?
-	jle Loop_8_Npos_8		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	andl %edi, %edi		# val <= 0?
+	jle Loop_8_Npos_8
 	iaddl $1, %eax
+
 Loop_8_Npos_8:
 	iaddl $32, %ebx
 	iaddl $32, %ecx
@@ -100,17 +112,38 @@ Loop_8_Npos_8:
 Loop_8_Exit:
 	iaddl $8, %edx		# restore %edx
 	je Done				# if(%edx == 0) goto Done
+
+# Loop_1:
+# 	mrmovl (%ebx), %esi	# read val from src...
+# 	andl %esi, %esi		# val <= 0?
+# 	rmmovl %esi, (%ecx)	# ...and store it to dst
+# 	jle Loop_1_Npos		# if so, goto Loop_1_Npos:
+# 	iaddl $1, %eax
+# Loop_1_Npos:
+# 	iaddl $4, %ebx
+# 	iaddl $4, %ecx
+# 	iaddl $-1, %edx
+# 	jg Loop_1			# if so, goto Loop_1:
+
 Loop_1:
 	mrmovl (%ebx), %esi	# read val from src...
-	rmmovl %esi, (%ecx)	# ...and store it to dst
+	iaddl $-1, %edx
+	je Loop_1_Exit			# if so, goto Loop_1_Exit:
 	andl %esi, %esi		# val <= 0?
-	jle Loop_1_Npos		# if so, goto Loop_1_Npos:	TODO: delay slot?
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	jle Loop_1_Npos		# if so, goto Loop_1_Npos:
 	iaddl $1, %eax
 Loop_1_Npos:
 	iaddl $4, %ebx
 	iaddl $4, %ecx
-	iaddl $-1, %edx
-	jg Loop_1			# if so, goto Loop_1:
+	jmp Loop_1:
+
+Loop_1_Exit:
+	andl %esi, %esi		# val <= 0?
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	jle Done 			# if so, goto Loop_1_Npos:
+	iaddl $1, %eax
+
 ##################################################################
 # Do not modify the following section of code
 # Function epilogue.
@@ -132,69 +165,69 @@ EndFun:
 ###############################
 	.align 4
 src:
-	.long 1
-	.long -2
-	.long -3
+	.long -1
+	.long 2
+	.long 3
 	.long 4
 	.long -5
 	.long -6
 	.long -7
 	.long 8
-	.long -9
-	.long -10
+	.long 9
+	.long 10
 	.long 11
 	.long -12
 	.long 13
 	.long -14
-	.long -15
+	.long 15
 	.long 16
-	.long -17
-	.long -18
-	.long 19
-	.long 20
-	.long -21
+	.long 17
+	.long 18
+	.long -19
+	.long -20
+	.long 21
 	.long 22
 	.long 23
-	.long -24
-	.long 25
-	.long 26
+	.long 24
+	.long -25
+	.long -26
 	.long -27
-	.long 28
+	.long -28
 	.long 29
-	.long -30
-	.long 31
+	.long 30
+	.long -31
 	.long 32
 	.long -33
-	.long -34
+	.long 34
 	.long 35
-	.long 36
-	.long -37
+	.long -36
+	.long 37
 	.long -38
 	.long 39
-	.long -40
+	.long 40
 	.long -41
-	.long 42
+	.long -42
 	.long -43
-	.long -44
+	.long 44
 	.long 45
-	.long -46
+	.long 46
 	.long 47
-	.long 48
-	.long 49
+	.long -48
+	.long -49
 	.long 50
-	.long -51
+	.long 51
 	.long 52
 	.long -53
 	.long -54
 	.long -55
-	.long 56
+	.long -56
 	.long -57
 	.long -58
-	.long 59
-	.long 60
+	.long -59
+	.long -60
 	.long -61
-	.long 62
-	.long 63
+	.long -62
+	.long -63
 	.long 0xbcdefa # This shouldn't get moved
 
 	.align 16

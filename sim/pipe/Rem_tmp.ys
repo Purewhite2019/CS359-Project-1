@@ -1,0 +1,199 @@
+
+Remain_7:
+	mrmovl 24(%ebx), %esi	# read val from src...
+	mrmovl 20(%ebx), %edi	# read val from src...
+	rmmovl %esi, 24(%ecx)	# ...and store it to dst
+	rmmovl %edi, 20(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_1
+	iaddl $1, %eax
+Remain_7_Npos_1:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_7_Npos_2
+	iaddl $1, %eax
+
+Remain_7_Npos_2:
+	mrmovl 16(%ebx), %esi	# read val from src...
+	mrmovl 12(%ebx), %edi	# read val from src...
+	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+	rmmovl %edi, 12(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_3
+	iaddl $1, %eax
+Remain_7_Npos_3:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_7_Npos_4
+	iaddl $1, %eax
+
+Remain_7_Npos_4:
+	mrmovl 8(%ebx), %esi	# read val from src...
+	mrmovl 4(%ebx), %edi	# read val from src...
+	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_5
+	iaddl $1, %eax
+Remain_7_Npos_5:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_7_Npos_6
+	iaddl $1, %eax
+
+Remain_7_Npos_6:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_7_Npos_7
+	iaddl $1, %eax
+Remain_7_Npos_7:
+    jmp Done
+
+Remain_6:
+	mrmovl 20(%ebx), %esi	# read val from src...
+	mrmovl 16(%ebx), %edi	# read val from src...
+	rmmovl %esi, 20(%ecx)	# ...and store it to dst
+	rmmovl %edi, 16(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_6
+	iaddl $1, %eax
+Remain_6_Npos_6:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_6_Npos_5
+	iaddl $1, %eax
+
+Remain_6_Npos_5:
+	mrmovl 12(%ebx), %esi	# read val from src...
+	mrmovl 8(%ebx), %edi	# read val from src...
+	rmmovl %esi, 12(%ecx)	# ...and store it to dst
+	rmmovl %edi, 8(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_4
+	iaddl $1, %eax
+Remain_6_Npos_4:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_6_Npos_3
+	iaddl $1, %eax
+
+Remain_6_Npos_3:
+	mrmovl 4(%ebx), %esi	# read val from src...
+	mrmovl (%ebx), %edi	# read val from src...
+	rmmovl %esi, 4(%ecx)	# ...and store it to dst
+	rmmovl %edi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_6_Npos_2
+	iaddl $1, %eax
+Remain_6_Npos_2:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_6_Npos_1
+	iaddl $1, %eax
+
+Remain_6_Npos_1:
+    jmp Done
+
+Remain_5:
+	mrmovl 16(%ebx), %esi	# read val from src...
+	mrmovl 12(%ebx), %edi	# read val from src...
+	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+	rmmovl %edi, 12(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_5_Npos_5
+	iaddl $1, %eax
+Remain_5_Npos_5:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_5_Npos_4
+	iaddl $1, %eax
+
+Remain_5_Npos_4:
+	mrmovl 8(%ebx), %esi	# read val from src...
+	mrmovl 4(%ebx), %edi	# read val from src...
+	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_5_Npos_3
+	iaddl $1, %eax
+Remain_5_Npos_3:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_5_Npos_2
+	iaddl $1, %eax
+
+Remain_5_Npos_2:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_5_Npos_1
+	iaddl $1, %eax
+Remain_5_Npos_1:
+    jmp Done
+
+Remain_4:
+	mrmovl 12(%ebx), %esi	# read val from src...
+	mrmovl 8(%ebx), %edi	# read val from src...
+	rmmovl %esi, 12(%ecx)	# ...and store it to dst
+	rmmovl %edi, 8(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_4_Npos_4
+	iaddl $1, %eax
+Remain_4_Npos_4:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_4_Npos_3
+	iaddl $1, %eax
+
+Remain_4_Npos_3:
+	mrmovl 4(%ebx), %esi	# read val from src...
+	mrmovl (%ebx), %edi	# read val from src...
+	rmmovl %esi, 4(%ecx)	# ...and store it to dst
+	rmmovl %edi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_4_Npos_2
+	iaddl $1, %eax
+Remain_4_Npos_2:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_4_Npos_1
+	iaddl $1, %eax
+
+Remain_4_Npos_1:
+    jmp Done
+
+Remain_3:
+	mrmovl 8(%ebx), %esi	# read val from src...
+	mrmovl 4(%ebx), %edi	# read val from src...
+	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_3_Npos_3
+	iaddl $1, %eax
+Remain_3_Npos_3:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_3_Npos_2
+	iaddl $1, %eax
+
+Remain_3_Npos_2:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_3_Npos_1
+	iaddl $1, %eax
+Remain_3_Npos_1:
+    jmp Done
+
+Remain_2:
+	mrmovl 4(%ebx), %esi	# read val from src...
+	mrmovl (%ebx), %edi	# read val from src...
+	rmmovl %esi, 4(%ecx)	# ...and store it to dst
+	rmmovl %edi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Remain_2_Npos_2
+	iaddl $1, %eax
+Remain_2_Npos_2:
+	andl %edi, %edi		# val <= 0?
+	jle Remain_2_Npos_1
+	iaddl $1, %eax
+
+Remain_2_Npos_1:
+    jmp Done
+
+Remain_1:
+	mrmovl (%ebx), %esi	# read val from src...
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	andl %esi, %esi		# val <= 0?
+	jle Done
+	iaddl $1, %eax

@@ -2,18 +2,18 @@
                       | # Test for copying block of size 50;
                       | #######################################################################
   0x000:              | 	.pos 0
-  0x000: 30f460030000 | main:	irmovl Stack, %esp  	# Set up stack pointer
-  0x006: 30f560030000 | 	irmovl Stack, %ebp  	# Set up base pointer
+  0x000: 30f460050000 | main:	irmovl Stack, %esp  	# Set up stack pointer
+  0x006: 30f560050000 | 	irmovl Stack, %ebp  	# Set up base pointer
                       | 
                       | 	# Set up arguments for copy function and then invoke it
   0x00c: 30f032000000 | 	irmovl $50, %eax		# src and dst have 50 elements
   0x012: a00f         | 	pushl %eax
-  0x014: 30f054020000 | 	irmovl dest, %eax	# dst array
+  0x014: 30f054040000 | 	irmovl dest, %eax	# dst array
   0x01a: a00f         | 	pushl %eax
-  0x01c: 30f080010000 | 	irmovl src, %eax	# src array
+  0x01c: 30f07c030000 | 	irmovl src, %eax	# src array
   0x022: a00f         | 	pushl %eax
   0x024: 802f000000   | 	call ncopy		 
-  0x029: 808f000000   | 	call check	        # Call checker code
+  0x029: 808b020000   | 	call check	        # Call checker code
   0x02e: 00           | 	halt                    # should halt with 0xaaaa in %eax
   0x02f:              | StartFun:
                       | #/* $begin ncopy-ys */
@@ -32,59 +32,198 @@
   0x031: 2045         | 	rrmovl %esp,%ebp	# Set up new frame pointer
   0x033: a06f         | 	pushl %esi		# Save callee-save regs
   0x035: a03f         | 	pushl %ebx
-  0x037: a07f         | 	pushl %edi
+  0x037: a06f         | 	pushl %esi
   0x039: 503508000000 | 	mrmovl 8(%ebp),%ebx	# src
   0x03f: 502510000000 | 	mrmovl 16(%ebp),%edx	# len
   0x045: 50150c000000 | 	mrmovl 12(%ebp),%ecx	# dst
                       | 
                       | ##################################################################
                       | # You can modify this portion
-                      | 	# Loop header
+                      | # Loop header
   0x04b: 6300         | 	xorl %eax,%eax		# count = 0;
-  0x04d: 6222         | 	andl %edx,%edx		# len <= 0?
-  0x04f: 7184000000   | 	jle Done		# if so, goto Done:
+  0x04d: c0f2f6ffffff | 	iaddl $-10, %edx
+  0x053: 7269010000   | 	jl HandleLeft
                       | 
-  0x054:              | Loop:
-  0x054: 506300000000 | 	mrmovl (%ebx), %esi	# read val from src...
-  0x05a: 406100000000 | 	rmmovl %esi, (%ecx)	# ...and store it to dst
-  0x060: 6266         | 	andl %esi, %esi		# val <= 0?
-  0x062: 716d000000   | 	jle Npos		# if so, goto Npos:	TODO: delay slot?
-                      | 	# irmovl $1, %edi
-                      | 	# addl %edi, %eax		# count++
-  0x067: c0f001000000 | 	iaddl $1, %eax
-  0x06d:              | Npos:
-                      | 	# irmovl $1, %edi
-                      | 	# subl %edi, %edx		# len--
-                      | 	# irmovl $4, %edi
-                      | 	# addl %edi, %ebx		# src++
-                      | 	# addl %edi, %ecx		# dst++
-  0x06d: c0f304000000 | 	iaddl $4, %ebx
-  0x073: c0f104000000 | 	iaddl $4, %ecx
-  0x079: c0f2ffffffff | 	iaddl $-1, %edx
-                      | 	# andl %edx,%edx		# len > 0?
-  0x07f: 7654000000   | 	jg Loop			# if so, goto Loop:
+  0x058:              | Loop:	
+  0x058: 506300000000 | 	mrmovl (%ebx), %esi	# read val from src...
+  0x05e: 406100000000 | 	rmmovl %esi, (%ecx)	# ...and store it to dst
+  0x064: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x066: 7171000000   | 	jle Npos1		# if so, goto Npos1:
+  0x06b: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x071:              | Npos1:
+  0x071: 506304000000 | 	mrmovl 4(%ebx), %esi	# read val from src...
+  0x077: 406104000000 | 	rmmovl %esi, 4(%ecx)	# ...and store it to dst
+  0x07d: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x07f: 718a000000   | 	jle Npos2		# if so, goto Npos2:
+  0x084: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x08a:              | Npos2:
+  0x08a: 506308000000 | 	mrmovl 8(%ebx), %esi	# read val from src...
+  0x090: 406108000000 | 	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+  0x096: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x098: 71a3000000   | 	jle Npos3		# if so, goto Npos3:
+  0x09d: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x0a3:              | Npos3:
+  0x0a3: 50630c000000 | 	mrmovl 12(%ebx), %esi	# read val from src...
+  0x0a9: 40610c000000 | 	rmmovl %esi, 12(%ecx)	# ...and store it to dst
+  0x0af: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x0b1: 71bc000000   | 	jle Npos4		# if so, goto Npos4:
+  0x0b6: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x0bc:              | Npos4:
+  0x0bc: 506310000000 | 	mrmovl 16(%ebx), %esi	# read val from src...
+  0x0c2: 406110000000 | 	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+  0x0c8: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x0ca: 71d5000000   | 	jle Npos5		# if so, goto Npos5:
+  0x0cf: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x0d5:              | Npos5:
+  0x0d5: 506314000000 | 	mrmovl 20(%ebx), %esi	# read val from src...
+  0x0db: 406114000000 | 	rmmovl %esi, 20(%ecx)	# ...and store it to dst
+  0x0e1: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x0e3: 71ee000000   | 	jle Npos6		# if so, goto Npos6:
+  0x0e8: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x0ee:              | Npos6:
+  0x0ee: 506318000000 | 	mrmovl 24(%ebx), %esi	# read val from src...
+  0x0f4: 406118000000 | 	rmmovl %esi, 24(%ecx)	# ...and store it to dst
+  0x0fa: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x0fc: 7107010000   | 	jle Npos7		# if so, goto Npos7:
+  0x101: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x107:              | Npos7:
+  0x107: 50631c000000 | 	mrmovl 28(%ebx), %esi	# read val from src...
+  0x10d: 40611c000000 | 	rmmovl %esi, 28(%ecx)	# ...and store it to dst
+  0x113: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x115: 7120010000   | 	jle Npos8		# if so, goto Npos8:
+  0x11a: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x120:              | Npos8:
+  0x120: 506320000000 | 	mrmovl 32(%ebx), %esi	# read val from src...
+  0x126: 406120000000 | 	rmmovl %esi, 32(%ecx)	# ...and store it to dst
+  0x12c: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x12e: 7139010000   | 	jle Npos9		# if so, goto Npos9:
+  0x133: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x139:              | Npos9:
+  0x139: 506324000000 | 	mrmovl 36(%ebx), %esi	# read val from src...
+  0x13f: 406124000000 | 	rmmovl %esi, 36(%ecx)	# ...and store it to dst
+  0x145: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x147: 7152010000   | 	jle Npos		# if so, goto Npos:
+  0x14c: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x152:              | Npos:
+  0x152: c0f328000000 | 	iaddl $40, %ebx		# src+=10
+  0x158: c0f128000000 | 	iaddl $40, %ecx		# dst+=10
+  0x15e: c0f2f6ffffff | 	iaddl $-10, %edx
+  0x164: 7558000000   | 	jge Loop
+                      | 
+  0x169:              | HandleLeft:
+  0x169: 6022         | 	addl %edx, %edx
+  0x16b: 6022         | 	addl %edx, %edx
+  0x16d: 506280020000 | 	mrmovl Table(%edx), %esi
+  0x173: a06f         | 	pushl %esi
+  0x175: 90           | 	ret
+                      | 
+  0x176:              | L9:
+  0x176: 506320000000 | 	mrmovl 32(%ebx), %esi	# read val from src...
+  0x17c: 406120000000 | 	rmmovl %esi, 32(%ecx)	# ...and store it to dst
+  0x182: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x184: 718f010000   | 	jle L8		# if so, goto L8:
+  0x189: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x18f:              | L8:
+  0x18f: 50631c000000 | 	mrmovl 28(%ebx), %esi	# read val from src...
+  0x195: 40611c000000 | 	rmmovl %esi, 28(%ecx)	# ...and store it to dst
+  0x19b: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x19d: 71a8010000   | 	jle L7		# if so, goto L7:
+  0x1a2: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x1a8:              | L7:
+  0x1a8: 506318000000 | 	mrmovl 24(%ebx), %esi	# read val from src...
+  0x1ae: 406118000000 | 	rmmovl %esi, 24(%ecx)	# ...and store it to dst
+  0x1b4: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x1b6: 71c1010000   | 	jle L6		# if so, goto L6:
+  0x1bb: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x1c1:              | L6:
+  0x1c1: 506314000000 | 	mrmovl 20(%ebx), %esi	# read val from src...
+  0x1c7: 406114000000 | 	rmmovl %esi, 20(%ecx)	# ...and store it to dst
+  0x1cd: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x1cf: 71da010000   | 	jle L5		# if so, goto L5:
+  0x1d4: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x1da:              | L5:
+  0x1da: 506310000000 | 	mrmovl 16(%ebx), %esi	# read val from src...
+  0x1e0: 406110000000 | 	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+  0x1e6: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x1e8: 71f3010000   | 	jle L4		# if so, goto L4:
+  0x1ed: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x1f3:              | L4:
+  0x1f3: 50630c000000 | 	mrmovl 12(%ebx), %esi	# read val from src...
+  0x1f9: 40610c000000 | 	rmmovl %esi, 12(%ecx)	# ...and store it to dst
+  0x1ff: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x201: 710c020000   | 	jle L3		# if so, goto L3:
+  0x206: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x20c:              | L3:
+  0x20c: 506308000000 | 	mrmovl 8(%ebx), %esi	# read val from src...
+  0x212: 406108000000 | 	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+  0x218: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x21a: 7125020000   | 	jle L2		# if so, goto L2:
+  0x21f: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x225:              | L2:
+  0x225: 506304000000 | 	mrmovl 4(%ebx), %esi	# read val from src...
+  0x22b: 406104000000 | 	rmmovl %esi, 4(%ecx)	# ...and store it to dst
+  0x231: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x233: 713e020000   | 	jle L1		# if so, goto L1:
+  0x238: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x23e:              | L1:
+  0x23e: 506300000000 | 	mrmovl (%ebx), %esi	# read val from src...
+  0x244: 406100000000 | 	rmmovl %esi, (%ecx)	# ...and store it to dst
+  0x24a: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x24c: 7180020000   | 	jle Done		# if so, goto Done:
+  0x251: c0f001000000 | 	iaddl $1, %eax		# count++
+                      | 
+  0x258:              | .align 4
+  0x258: 80020000     | 	.long Done
+  0x25c: 3e020000     | 	.long L1
+  0x260: 25020000     | 	.long L2
+  0x264: 0c020000     | 	.long L3
+  0x268: f3010000     | 	.long L4
+  0x26c: da010000     | 	.long L5
+  0x270: c1010000     | 	.long L6
+  0x274: a8010000     | 	.long L7
+  0x278: 8f010000     | 	.long L8
+  0x27c: 76010000     | 	.long L9
+  0x280:              | Table:	
                       | ##################################################################
                       | # Do not modify the following section of code
                       | # Function epilogue.
-  0x084:              | Done:
-  0x084: b07f         | 	popl %edi               # Restore callee-save registers
-  0x086: b03f         | 	popl %ebx
-  0x088: b06f         | 	popl %esi
-  0x08a: 2054         | 	rrmovl %ebp, %esp
-  0x08c: b05f         | 	popl %ebp
-  0x08e: 90           | 	ret
+  0x280:              | Done:
+  0x280: b06f         | 	popl %esi               # Restore callee-save registers
+  0x282: b03f         | 	popl %ebx
+  0x284: b06f         | 	popl %esi
+  0x286: 2054         | 	rrmovl %ebp, %esp
+  0x288: b05f         | 	popl %ebp
+  0x28a: 90           | 	ret
                       | ##################################################################
                       | # Keep the following label at the end of your function
-  0x08f:              | End:
+  0x28b:              | End:
                       | #/* $end ncopy-ys */
-  0x08f:              | EndFun:
+  0x28b:              | EndFun:
                       | #################################################################### 
                       | # Epilogue code for the correctness testing driver
                       | ####################################################################
                       | 
                       | # This is the correctness checking code.
                       | # It checks:
-                      | #   1. %eax has 23.  Set %eax to 0xbbbb if not.
+                      | #   1. %eax has 26.  Set %eax to 0xbbbb if not.
                       | #   2. The total length of the code is less than or equal to 1000.
                       | #      Set %eax to 0xcccc if not.
                       | #   3. The source data was copied to the destination.
@@ -92,208 +231,208 @@
                       | #   4. The words just before and just after the destination region
                       | #      were not corrupted.  Set %eax to 0xeeee if not.
                       | # If all checks pass, then sets %eax to 0xaaaa
-  0x08f:              | check:
-  0x08f: a05f         | 	pushl %ebp
-  0x091: 2045         | 	rrmovl %esp,%ebp
-  0x093: a06f         | 	pushl %esi
-  0x095: a03f         | 	pushl %ebx
-  0x097: a07f         | 	pushl %edi
+  0x28b:              | check:
+  0x28b: a05f         | 	pushl %ebp
+  0x28d: 2045         | 	rrmovl %esp,%ebp
+  0x28f: a06f         | 	pushl %esi
+  0x291: a03f         | 	pushl %ebx
+  0x293: a07f         | 	pushl %edi
                       | 	# Return value test
-  0x099: 30f217000000 | 	irmovl $23,%edx
-  0x09f: 6120         | 	subl %edx,%eax
-  0x0a1: 73b1000000   | 	je checkb
-  0x0a6: 30f0bbbb0000 | 	irmovl $0xbbbb,%eax  # Failed test #1
-  0x0ac: 7073010000   | 	jmp cdone
-  0x0b1:              | checkb:
+  0x295: 30f21a000000 | 	irmovl $26,%edx
+  0x29b: 6120         | 	subl %edx,%eax
+  0x29d: 73ad020000   | 	je checkb
+  0x2a2: 30f0bbbb0000 | 	irmovl $0xbbbb,%eax  # Failed test #1
+  0x2a8: 706f030000   | 	jmp cdone
+  0x2ad:              | checkb:
                       | 	# Code length check
-  0x0b1: 30f08f000000 | 	irmovl EndFun,%eax
-  0x0b7: 30f22f000000 | 	irmovl StartFun,%edx
-  0x0bd: 6120         | 	subl %edx,%eax
-  0x0bf: 30f2e8030000 | 	irmovl $1000,%edx
-  0x0c5: 6102         | 	subl %eax,%edx
-  0x0c7: 75d7000000   | 	jge checkm
-  0x0cc: 30f0cccc0000 | 	irmovl $0xcccc,%eax  # Failed test #2
-  0x0d2: 7073010000   | 	jmp cdone
-  0x0d7:              | checkm:
-  0x0d7: 30f254020000 | 	irmovl dest, %edx # Pointer to next destination location
-  0x0dd: 30f380010000 | 	irmovl src,%ebx   # Pointer to next source location
-  0x0e3: 30f732000000 | 	irmovl $50,%edi  # Count
-  0x0e9: 6277         | 	andl %edi,%edi
-  0x0eb: 7325010000   | 	je checkpre         # Skip check if count = 0
-  0x0f0:              | mcloop:
-  0x0f0: 500200000000 | 	mrmovl (%edx),%eax
-  0x0f6: 506300000000 | 	mrmovl (%ebx),%esi
-  0x0fc: 6160         | 	subl %esi,%eax
-  0x0fe: 730e010000   | 	je  mok
-  0x103: 30f0dddd0000 | 	irmovl $0xdddd,%eax # Failed test #3
-  0x109: 7073010000   | 	jmp cdone
-  0x10e:              | mok:
-  0x10e: 30f004000000 | 	irmovl $4,%eax
-  0x114: 6002         | 	addl %eax,%edx	  # dest ++
-  0x116: 6003         | 	addl %eax,%ebx    # src++
-  0x118: 30f001000000 | 	irmovl $1,%eax
-  0x11e: 6107         | 	subl %eax,%edi    # cnt--
-  0x120: 76f0000000   | 	jg mcloop
-  0x125:              | checkpre:
+  0x2ad: 30f08b020000 | 	irmovl EndFun,%eax
+  0x2b3: 30f22f000000 | 	irmovl StartFun,%edx
+  0x2b9: 6120         | 	subl %edx,%eax
+  0x2bb: 30f2e8030000 | 	irmovl $1000,%edx
+  0x2c1: 6102         | 	subl %eax,%edx
+  0x2c3: 75d3020000   | 	jge checkm
+  0x2c8: 30f0cccc0000 | 	irmovl $0xcccc,%eax  # Failed test #2
+  0x2ce: 706f030000   | 	jmp cdone
+  0x2d3:              | checkm:
+  0x2d3: 30f254040000 | 	irmovl dest, %edx # Pointer to next destination location
+  0x2d9: 30f37c030000 | 	irmovl src,%ebx   # Pointer to next source location
+  0x2df: 30f732000000 | 	irmovl $50,%edi  # Count
+  0x2e5: 6277         | 	andl %edi,%edi
+  0x2e7: 7321030000   | 	je checkpre         # Skip check if count = 0
+  0x2ec:              | mcloop:
+  0x2ec: 500200000000 | 	mrmovl (%edx),%eax
+  0x2f2: 506300000000 | 	mrmovl (%ebx),%esi
+  0x2f8: 6160         | 	subl %esi,%eax
+  0x2fa: 730a030000   | 	je  mok
+  0x2ff: 30f0dddd0000 | 	irmovl $0xdddd,%eax # Failed test #3
+  0x305: 706f030000   | 	jmp cdone
+  0x30a:              | mok:
+  0x30a: 30f004000000 | 	irmovl $4,%eax
+  0x310: 6002         | 	addl %eax,%edx	  # dest ++
+  0x312: 6003         | 	addl %eax,%ebx    # src++
+  0x314: 30f001000000 | 	irmovl $1,%eax
+  0x31a: 6107         | 	subl %eax,%edi    # cnt--
+  0x31c: 76ec020000   | 	jg mcloop
+  0x321:              | checkpre:
                       | 	# Check for corruption
-  0x125: 30f250020000 | 	irmovl Predest,%edx
-  0x12b: 500200000000 | 	mrmovl (%edx), %eax  # Get word before destination
-  0x131: 30f2fadebc00 | 	irmovl $0xbcdefa, %edx
-  0x137: 6120         | 	subl %edx,%eax
-  0x139: 7349010000   | 	je checkpost
-  0x13e: 30f0eeee0000 | 	irmovl $0xeeee,%eax  # Failed test #4
-  0x144: 7073010000   | 	jmp cdone
-  0x149:              | checkpost:
+  0x321: 30f250040000 | 	irmovl Predest,%edx
+  0x327: 500200000000 | 	mrmovl (%edx), %eax  # Get word before destination
+  0x32d: 30f2fadebc00 | 	irmovl $0xbcdefa, %edx
+  0x333: 6120         | 	subl %edx,%eax
+  0x335: 7345030000   | 	je checkpost
+  0x33a: 30f0eeee0000 | 	irmovl $0xeeee,%eax  # Failed test #4
+  0x340: 706f030000   | 	jmp cdone
+  0x345:              | checkpost:
                       | 	# Check for corruption
-  0x149: 30f21c030000 | 	irmovl Postdest,%edx
-  0x14f: 500200000000 | 	mrmovl (%edx), %eax  # Get word after destination
-  0x155: 30f2bcfade00 | 	irmovl $0xdefabc, %edx
-  0x15b: 6120         | 	subl %edx,%eax
-  0x15d: 736d010000   | 	je checkok
-  0x162: 30f0eeee0000 | 	irmovl $0xeeee,%eax # Failed test #4
-  0x168: 7073010000   | 	jmp cdone
-  0x16d:              | checkok:
+  0x345: 30f21c050000 | 	irmovl Postdest,%edx
+  0x34b: 500200000000 | 	mrmovl (%edx), %eax  # Get word after destination
+  0x351: 30f2bcfade00 | 	irmovl $0xdefabc, %edx
+  0x357: 6120         | 	subl %edx,%eax
+  0x359: 7369030000   | 	je checkok
+  0x35e: 30f0eeee0000 | 	irmovl $0xeeee,%eax # Failed test #4
+  0x364: 706f030000   | 	jmp cdone
+  0x369:              | checkok:
                       | 	# Successful checks
-  0x16d: 30f0aaaa0000 | 	irmovl $0xaaaa,%eax
-  0x173:              | cdone:
-  0x173: b07f         | 	popl %edi
-  0x175: b03f         | 	popl %ebx
-  0x177: b06f         | 	popl %esi
-  0x179: 2054         | 	rrmovl %ebp, %esp
-  0x17b: b05f         | 	popl %ebp
-  0x17d: 90           | 	ret
+  0x369: 30f0aaaa0000 | 	irmovl $0xaaaa,%eax
+  0x36f:              | cdone:
+  0x36f: b07f         | 	popl %edi
+  0x371: b03f         | 	popl %ebx
+  0x373: b06f         | 	popl %esi
+  0x375: 2054         | 	rrmovl %ebp, %esp
+  0x377: b05f         | 	popl %ebp
+  0x379: 90           | 	ret
                       | 
                       | ###############################
                       | # Source and destination blocks 
                       | ###############################
-  0x180:              | 	.align 4
-  0x180:              | src:
-  0x180: 01000000     | 	.long 1
-  0x184: feffffff     | 	.long -2
-  0x188: fdffffff     | 	.long -3
-  0x18c: fcffffff     | 	.long -4
-  0x190: 05000000     | 	.long 5
-  0x194: faffffff     | 	.long -6
-  0x198: 07000000     | 	.long 7
-  0x19c: f8ffffff     | 	.long -8
-  0x1a0: f7ffffff     | 	.long -9
-  0x1a4: 0a000000     | 	.long 10
-  0x1a8: f5ffffff     | 	.long -11
-  0x1ac: 0c000000     | 	.long 12
-  0x1b0: f3ffffff     | 	.long -13
-  0x1b4: 0e000000     | 	.long 14
-  0x1b8: 0f000000     | 	.long 15
-  0x1bc: f0ffffff     | 	.long -16
-  0x1c0: efffffff     | 	.long -17
-  0x1c4: eeffffff     | 	.long -18
-  0x1c8: 13000000     | 	.long 19
-  0x1cc: ecffffff     | 	.long -20
-  0x1d0: ebffffff     | 	.long -21
-  0x1d4: 16000000     | 	.long 22
-  0x1d8: 17000000     | 	.long 23
-  0x1dc: e8ffffff     | 	.long -24
-  0x1e0: e7ffffff     | 	.long -25
-  0x1e4: e6ffffff     | 	.long -26
-  0x1e8: 1b000000     | 	.long 27
-  0x1ec: e4ffffff     | 	.long -28
-  0x1f0: 1d000000     | 	.long 29
-  0x1f4: 1e000000     | 	.long 30
-  0x1f8: e1ffffff     | 	.long -31
-  0x1fc: 20000000     | 	.long 32
-  0x200: dfffffff     | 	.long -33
-  0x204: deffffff     | 	.long -34
-  0x208: 23000000     | 	.long 35
-  0x20c: dcffffff     | 	.long -36
-  0x210: dbffffff     | 	.long -37
-  0x214: daffffff     | 	.long -38
-  0x218: d9ffffff     | 	.long -39
-  0x21c: d8ffffff     | 	.long -40
-  0x220: 29000000     | 	.long 41
-  0x224: d6ffffff     | 	.long -42
-  0x228: 2b000000     | 	.long 43
-  0x22c: 2c000000     | 	.long 44
-  0x230: 2d000000     | 	.long 45
-  0x234: 2e000000     | 	.long 46
-  0x238: 2f000000     | 	.long 47
-  0x23c: 30000000     | 	.long 48
-  0x240: cfffffff     | 	.long -49
-  0x244: 32000000     | 	.long 50
-  0x248: fadebc00     | 	.long 0xbcdefa # This shouldn't get moved
+  0x37c:              | 	.align 4
+  0x37c:              | src:
+  0x37c: ffffffff     | 	.long -1
+  0x380: 02000000     | 	.long 2
+  0x384: 03000000     | 	.long 3
+  0x388: fcffffff     | 	.long -4
+  0x38c: 05000000     | 	.long 5
+  0x390: 06000000     | 	.long 6
+  0x394: f9ffffff     | 	.long -7
+  0x398: 08000000     | 	.long 8
+  0x39c: 09000000     | 	.long 9
+  0x3a0: f6ffffff     | 	.long -10
+  0x3a4: f5ffffff     | 	.long -11
+  0x3a8: 0c000000     | 	.long 12
+  0x3ac: 0d000000     | 	.long 13
+  0x3b0: 0e000000     | 	.long 14
+  0x3b4: f1ffffff     | 	.long -15
+  0x3b8: 10000000     | 	.long 16
+  0x3bc: 11000000     | 	.long 17
+  0x3c0: 12000000     | 	.long 18
+  0x3c4: edffffff     | 	.long -19
+  0x3c8: 14000000     | 	.long 20
+  0x3cc: ebffffff     | 	.long -21
+  0x3d0: eaffffff     | 	.long -22
+  0x3d4: e9ffffff     | 	.long -23
+  0x3d8: e8ffffff     | 	.long -24
+  0x3dc: 19000000     | 	.long 25
+  0x3e0: 1a000000     | 	.long 26
+  0x3e4: 1b000000     | 	.long 27
+  0x3e8: e4ffffff     | 	.long -28
+  0x3ec: 1d000000     | 	.long 29
+  0x3f0: e2ffffff     | 	.long -30
+  0x3f4: e1ffffff     | 	.long -31
+  0x3f8: e0ffffff     | 	.long -32
+  0x3fc: dfffffff     | 	.long -33
+  0x400: deffffff     | 	.long -34
+  0x404: 23000000     | 	.long 35
+  0x408: 24000000     | 	.long 36
+  0x40c: dbffffff     | 	.long -37
+  0x410: daffffff     | 	.long -38
+  0x414: d9ffffff     | 	.long -39
+  0x418: d8ffffff     | 	.long -40
+  0x41c: d7ffffff     | 	.long -41
+  0x420: 2a000000     | 	.long 42
+  0x424: 2b000000     | 	.long 43
+  0x428: 2c000000     | 	.long 44
+  0x42c: 2d000000     | 	.long 45
+  0x430: 2e000000     | 	.long 46
+  0x434: 2f000000     | 	.long 47
+  0x438: d0ffffff     | 	.long -48
+  0x43c: cfffffff     | 	.long -49
+  0x440: 32000000     | 	.long 50
+  0x444: fadebc00     | 	.long 0xbcdefa # This shouldn't get moved
                       | 
-  0x250:              | 	.align 16
-  0x250:              | Predest:
-  0x250: fadebc00     | 	.long 0xbcdefa
-  0x254:              | dest:
-  0x254: abefcd00     | 	.long 0xcdefab
-  0x258: abefcd00     | 	.long 0xcdefab
-  0x25c: abefcd00     | 	.long 0xcdefab
-  0x260: abefcd00     | 	.long 0xcdefab
-  0x264: abefcd00     | 	.long 0xcdefab
-  0x268: abefcd00     | 	.long 0xcdefab
-  0x26c: abefcd00     | 	.long 0xcdefab
-  0x270: abefcd00     | 	.long 0xcdefab
-  0x274: abefcd00     | 	.long 0xcdefab
-  0x278: abefcd00     | 	.long 0xcdefab
-  0x27c: abefcd00     | 	.long 0xcdefab
-  0x280: abefcd00     | 	.long 0xcdefab
-  0x284: abefcd00     | 	.long 0xcdefab
-  0x288: abefcd00     | 	.long 0xcdefab
-  0x28c: abefcd00     | 	.long 0xcdefab
-  0x290: abefcd00     | 	.long 0xcdefab
-  0x294: abefcd00     | 	.long 0xcdefab
-  0x298: abefcd00     | 	.long 0xcdefab
-  0x29c: abefcd00     | 	.long 0xcdefab
-  0x2a0: abefcd00     | 	.long 0xcdefab
-  0x2a4: abefcd00     | 	.long 0xcdefab
-  0x2a8: abefcd00     | 	.long 0xcdefab
-  0x2ac: abefcd00     | 	.long 0xcdefab
-  0x2b0: abefcd00     | 	.long 0xcdefab
-  0x2b4: abefcd00     | 	.long 0xcdefab
-  0x2b8: abefcd00     | 	.long 0xcdefab
-  0x2bc: abefcd00     | 	.long 0xcdefab
-  0x2c0: abefcd00     | 	.long 0xcdefab
-  0x2c4: abefcd00     | 	.long 0xcdefab
-  0x2c8: abefcd00     | 	.long 0xcdefab
-  0x2cc: abefcd00     | 	.long 0xcdefab
-  0x2d0: abefcd00     | 	.long 0xcdefab
-  0x2d4: abefcd00     | 	.long 0xcdefab
-  0x2d8: abefcd00     | 	.long 0xcdefab
-  0x2dc: abefcd00     | 	.long 0xcdefab
-  0x2e0: abefcd00     | 	.long 0xcdefab
-  0x2e4: abefcd00     | 	.long 0xcdefab
-  0x2e8: abefcd00     | 	.long 0xcdefab
-  0x2ec: abefcd00     | 	.long 0xcdefab
-  0x2f0: abefcd00     | 	.long 0xcdefab
-  0x2f4: abefcd00     | 	.long 0xcdefab
-  0x2f8: abefcd00     | 	.long 0xcdefab
-  0x2fc: abefcd00     | 	.long 0xcdefab
-  0x300: abefcd00     | 	.long 0xcdefab
-  0x304: abefcd00     | 	.long 0xcdefab
-  0x308: abefcd00     | 	.long 0xcdefab
-  0x30c: abefcd00     | 	.long 0xcdefab
-  0x310: abefcd00     | 	.long 0xcdefab
-  0x314: abefcd00     | 	.long 0xcdefab
-  0x318: abefcd00     | 	.long 0xcdefab
-  0x31c:              | Postdest:
-  0x31c: bcfade00     | 	.long 0xdefabc
+  0x450:              | 	.align 16
+  0x450:              | Predest:
+  0x450: fadebc00     | 	.long 0xbcdefa
+  0x454:              | dest:
+  0x454: abefcd00     | 	.long 0xcdefab
+  0x458: abefcd00     | 	.long 0xcdefab
+  0x45c: abefcd00     | 	.long 0xcdefab
+  0x460: abefcd00     | 	.long 0xcdefab
+  0x464: abefcd00     | 	.long 0xcdefab
+  0x468: abefcd00     | 	.long 0xcdefab
+  0x46c: abefcd00     | 	.long 0xcdefab
+  0x470: abefcd00     | 	.long 0xcdefab
+  0x474: abefcd00     | 	.long 0xcdefab
+  0x478: abefcd00     | 	.long 0xcdefab
+  0x47c: abefcd00     | 	.long 0xcdefab
+  0x480: abefcd00     | 	.long 0xcdefab
+  0x484: abefcd00     | 	.long 0xcdefab
+  0x488: abefcd00     | 	.long 0xcdefab
+  0x48c: abefcd00     | 	.long 0xcdefab
+  0x490: abefcd00     | 	.long 0xcdefab
+  0x494: abefcd00     | 	.long 0xcdefab
+  0x498: abefcd00     | 	.long 0xcdefab
+  0x49c: abefcd00     | 	.long 0xcdefab
+  0x4a0: abefcd00     | 	.long 0xcdefab
+  0x4a4: abefcd00     | 	.long 0xcdefab
+  0x4a8: abefcd00     | 	.long 0xcdefab
+  0x4ac: abefcd00     | 	.long 0xcdefab
+  0x4b0: abefcd00     | 	.long 0xcdefab
+  0x4b4: abefcd00     | 	.long 0xcdefab
+  0x4b8: abefcd00     | 	.long 0xcdefab
+  0x4bc: abefcd00     | 	.long 0xcdefab
+  0x4c0: abefcd00     | 	.long 0xcdefab
+  0x4c4: abefcd00     | 	.long 0xcdefab
+  0x4c8: abefcd00     | 	.long 0xcdefab
+  0x4cc: abefcd00     | 	.long 0xcdefab
+  0x4d0: abefcd00     | 	.long 0xcdefab
+  0x4d4: abefcd00     | 	.long 0xcdefab
+  0x4d8: abefcd00     | 	.long 0xcdefab
+  0x4dc: abefcd00     | 	.long 0xcdefab
+  0x4e0: abefcd00     | 	.long 0xcdefab
+  0x4e4: abefcd00     | 	.long 0xcdefab
+  0x4e8: abefcd00     | 	.long 0xcdefab
+  0x4ec: abefcd00     | 	.long 0xcdefab
+  0x4f0: abefcd00     | 	.long 0xcdefab
+  0x4f4: abefcd00     | 	.long 0xcdefab
+  0x4f8: abefcd00     | 	.long 0xcdefab
+  0x4fc: abefcd00     | 	.long 0xcdefab
+  0x500: abefcd00     | 	.long 0xcdefab
+  0x504: abefcd00     | 	.long 0xcdefab
+  0x508: abefcd00     | 	.long 0xcdefab
+  0x50c: abefcd00     | 	.long 0xcdefab
+  0x510: abefcd00     | 	.long 0xcdefab
+  0x514: abefcd00     | 	.long 0xcdefab
+  0x518: abefcd00     | 	.long 0xcdefab
+  0x51c:              | Postdest:
+  0x51c: bcfade00     | 	.long 0xdefabc
                       | 
-  0x320:              | .align 4
+  0x520:              | .align 4
                       | # Run time stack
-  0x320: 00000000     | 	.long 0
-  0x324: 00000000     | 	.long 0
-  0x328: 00000000     | 	.long 0
-  0x32c: 00000000     | 	.long 0
-  0x330: 00000000     | 	.long 0
-  0x334: 00000000     | 	.long 0
-  0x338: 00000000     | 	.long 0
-  0x33c: 00000000     | 	.long 0
-  0x340: 00000000     | 	.long 0
-  0x344: 00000000     | 	.long 0
-  0x348: 00000000     | 	.long 0
-  0x34c: 00000000     | 	.long 0
-  0x350: 00000000     | 	.long 0
-  0x354: 00000000     | 	.long 0
-  0x358: 00000000     | 	.long 0
-  0x35c: 00000000     | 	.long 0
+  0x520: 00000000     | 	.long 0
+  0x524: 00000000     | 	.long 0
+  0x528: 00000000     | 	.long 0
+  0x52c: 00000000     | 	.long 0
+  0x530: 00000000     | 	.long 0
+  0x534: 00000000     | 	.long 0
+  0x538: 00000000     | 	.long 0
+  0x53c: 00000000     | 	.long 0
+  0x540: 00000000     | 	.long 0
+  0x544: 00000000     | 	.long 0
+  0x548: 00000000     | 	.long 0
+  0x54c: 00000000     | 	.long 0
+  0x550: 00000000     | 	.long 0
+  0x554: 00000000     | 	.long 0
+  0x558: 00000000     | 	.long 0
+  0x55c: 00000000     | 	.long 0
                       | 
-  0x360:              | Stack:
+  0x560:              | Stack:
