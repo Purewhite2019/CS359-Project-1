@@ -49,7 +49,7 @@ ncopy:	pushl %ebp		# Save old frame pointer
 ##################################################################
 # You can modify this portion
 	# Loop_1 header
-	# xorl %eax,%eax		# count = 0;
+	xorl %eax,%eax		# count = 0;
 	iaddl $-12, %edx
 	jl Loop_12_Exit		# if(%edx - 8 <= 0) goto Loop_12_Exit
 
@@ -326,8 +326,8 @@ EndFun:
 	.align 4
 src:
 	.long 1
-	.long 2
-	.long -3
+	.long -2
+	.long 3
 	.long -4
 	.long 0xbcdefa # This shouldn't get moved
 

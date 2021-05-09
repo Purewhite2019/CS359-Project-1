@@ -176,7 +176,8 @@ intsig W_valM  'mem_wb_curr->valm'	# Memory M value
 ## What address should instruction be fetched at
 int f_pc = [
 	# Mispredicted branch.  Fetch at incremented PC
-	M_icode == IJXX && (M_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG}) && !M_Cnd && (W_icode in { IOPL, IIADDL}) : M_valA;
+	M_icode == IJXX && !M_Cnd && (M_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG} && W_icode in { IOPL, IIADDL} ||
+								  !(M_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG})) : M_valA;
 	# Completion of RET instruction.
 	W_icode == IRET : W_valM;
 	# Default: Use predicted value of PC
@@ -389,7 +390,9 @@ bool D_stall =
 
 bool D_bubble =
 	# Mispredicted branch
-	(E_icode == IJXX && (E_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG}) && !e_Cnd && D_icode in { IOPL, IIADDL}) ||	# Modified by Qi Liu, added 'M_icode in { IOPL, IIADDL}'
+	(E_icode == IJXX && !e_Cnd && ((E_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG} && M_icode in { IOPL, IIADDL})		#  Modified by Qi Liu, added 'M_icode in { IOPL, IIADDL}'
+									|| !(E_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG})))
+	||
 	# Stalling at fetch while ret passes through pipeline
 	# but not condition for a load/use hazard
 	!(E_icode in { IMRMOVL, IPOPL } && E_dstM in { d_srcA, d_srcB }) &&
@@ -400,7 +403,9 @@ bool D_bubble =
 bool E_stall = 0;
 bool E_bubble =
 	# Mispredicted branch
-	(E_icode == IJXX && (E_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG}) && !e_Cnd && D_icode in { IOPL, IIADDL}) ||	#  Modified by Qi Liu, added 'M_icode in { IOPL, IIADDL}'
+	(E_icode == IJXX && !e_Cnd && ((E_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG} && M_icode in { IOPL, IIADDL})		#  Modified by Qi Liu, added 'M_icode in { IOPL, IIADDL}'
+									|| !(E_ifun in {FJLE, FJL, FJE, FJNE, FJGE, FJG})))
+	||
 	# Conditions for a load/use hazard
 	E_icode in { IMRMOVL, IPOPL } &&
 	 E_dstM in { d_srcA, d_srcB};
