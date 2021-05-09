@@ -2,15 +2,26 @@
                       | # Test for copying block of size 4;
                       | #######################################################################
   0x000:              | 	.pos 0
+<<<<<<< HEAD
   0x000: 30f408010000 | main:	irmovl Stack, %esp  	# Set up stack pointer
   0x006: 30f508010000 | 	irmovl Stack, %ebp  	# Set up base pointer
+=======
+  0x000: 30f468040000 | main:	irmovl Stack, %esp  	# Set up stack pointer
+  0x006: 30f568040000 | 	irmovl Stack, %ebp  	# Set up base pointer
+>>>>>>> dev-purewhite
                       | 
                       | 	# Set up arguments for copy function and then invoke it
   0x00c: 30f004000000 | 	irmovl $4, %eax		# src and dst have 4 elements
   0x012: a00f         | 	pushl %eax
+<<<<<<< HEAD
   0x014: 30f0b4000000 | 	irmovl dest, %eax	# dst array
   0x01a: a00f         | 	pushl %eax
   0x01c: 30f090000000 | 	irmovl src, %eax	# src array
+=======
+  0x014: 30f014040000 | 	irmovl dest, %eax	# dst array
+  0x01a: a00f         | 	pushl %eax
+  0x01c: 30f0f0030000 | 	irmovl src, %eax	# src array
+>>>>>>> dev-purewhite
   0x022: a00f         | 	pushl %eax
   0x024: 802a000000   | 	call ncopy		 
   0x029: 00           | 	halt			# should halt with num nonzeros in %eax
@@ -20,9 +31,25 @@
                       | # ncopy.ys - Copy a src block of len ints to dst.
                       | # Return the number of positive ints (>0) contained in src.
                       | #
+<<<<<<< HEAD
                       | # Include your name and ID here.
                       | #
                       | # Describe how and why you modified the baseline code.
+=======
+                      | # Author: Qi Liu(519021910529)
+                      | #
+                      | # Modification:
+                      | #	1) Added iaddl instruction and used that in the program.
+                      | #	2) 12 Loop unrolling
+                      | #	3) Reordered some instructions to remove redundant ones.
+                      | #	4) In Unrolled 12-Loop , seperate the load into %esi and use of %esi by mixing with %edi.
+                      | #	5) In the remaining part, use jump table to handle
+                      | #	6) In the remaining part, seperate code according to whether the number of remaining elements is even and odd.
+                      | #	7) Added a forwarding from the CC in EX stage to IF stage when instr in ID stage doesn`t influence CC, idea from Ziqi Zhao and Yimin Zhao.
+                      | #
+                      | # Pity:
+                      | #	1) Delay slot is unable because other test cases can`t be adjusted to it.
+>>>>>>> dev-purewhite
                       | #
                       | ##################################################################
                       | # Do not modify this portion
@@ -38,6 +65,7 @@
                       | 
                       | ##################################################################
                       | # You can modify this portion
+<<<<<<< HEAD
                       | 	# Loop header
   0x046: 6300         | 	xorl %eax,%eax		# count = 0;
   0x048: 6222         | 	andl %edx,%edx		# len <= 0?
@@ -71,10 +99,284 @@
   0x08e:              | End:
                       | #/* $end ncopy-ys */
   0x08e:              | EndFun:
+=======
+                      | 	# Loop_1 header
+  0x046: 6300         | 	xorl %eax,%eax		# count = 0;
+  0x048: c0f2f4ffffff | 	iaddl $-12, %edx
+  0x04e: 7296010000   | 	jl Loop_12_Exit		# if(%edx - 8 <= 0) goto Loop_12_Exit
+                      | 
+  0x053:              | Loop_12:
+  0x053: 506300000000 | 	mrmovl (%ebx), %esi	# read val from src...
+  0x059: 507304000000 | 	mrmovl 4(%ebx), %edi	# read val from src...
+  0x05f: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x061: 406100000000 | 	rmmovl %esi, (%ecx)	# ...and store it to dst
+  0x067: 7172000000   | 	jle Loop_12_Npos_1
+  0x06c: c0f001000000 | 	iaddl $1, %eax
+  0x072:              | Loop_12_Npos_1:
+  0x072: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x074: 407104000000 | 	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+  0x07a: 7185000000   | 	jle Loop_12_Npos_2
+  0x07f: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x085:              | Loop_12_Npos_2:
+  0x085: 506308000000 | 	mrmovl 8(%ebx), %esi	# read val from src...
+  0x08b: 50730c000000 | 	mrmovl 12(%ebx), %edi	# read val from src...
+  0x091: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x093: 406108000000 | 	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+  0x099: 71a4000000   | 	jle Loop_12_Npos_3
+  0x09e: c0f001000000 | 	iaddl $1, %eax
+  0x0a4:              | Loop_12_Npos_3:
+  0x0a4: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x0a6: 40710c000000 | 	rmmovl %edi, 12(%ecx)	# ...and store it to dst
+  0x0ac: 71b7000000   | 	jle Loop_12_Npos_4
+  0x0b1: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x0b7:              | Loop_12_Npos_4:
+  0x0b7: 506310000000 | 	mrmovl 16(%ebx), %esi	# read val from src...
+  0x0bd: 507314000000 | 	mrmovl 20(%ebx), %edi	# read val from src...
+  0x0c3: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x0c5: 406110000000 | 	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+  0x0cb: 71d6000000   | 	jle Loop_12_Npos_5
+  0x0d0: c0f001000000 | 	iaddl $1, %eax
+  0x0d6:              | Loop_12_Npos_5:
+  0x0d6: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x0d8: 407114000000 | 	rmmovl %edi, 20(%ecx)	# ...and store it to dst
+  0x0de: 71e9000000   | 	jle Loop_12_Npos_6
+  0x0e3: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x0e9:              | Loop_12_Npos_6:
+  0x0e9: 506318000000 | 	mrmovl 24(%ebx), %esi	# read val from src...
+  0x0ef: 50731c000000 | 	mrmovl 28(%ebx), %edi	# read val from src...
+  0x0f5: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x0f7: 406118000000 | 	rmmovl %esi, 24(%ecx)	# ...and store it to dst
+  0x0fd: 7108010000   | 	jle Loop_12_Npos_7
+  0x102: c0f001000000 | 	iaddl $1, %eax
+  0x108:              | Loop_12_Npos_7:
+  0x108: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x10a: 40711c000000 | 	rmmovl %edi, 28(%ecx)	# ...and store it to dst
+  0x110: 711b010000   | 	jle Loop_12_Npos_8
+  0x115: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x11b:              | Loop_12_Npos_8:
+  0x11b: 506320000000 | 	mrmovl 32(%ebx), %esi	# read val from src...
+  0x121: 507324000000 | 	mrmovl 36(%ebx), %edi	# read val from src...
+  0x127: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x129: 406120000000 | 	rmmovl %esi, 32(%ecx)	# ...and store it to dst
+  0x12f: 713a010000   | 	jle Loop_12_Npos_9
+  0x134: c0f001000000 | 	iaddl $1, %eax
+  0x13a:              | Loop_12_Npos_9:
+  0x13a: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x13c: 407124000000 | 	rmmovl %edi, 36(%ecx)	# ...and store it to dst
+  0x142: 714d010000   | 	jle Loop_12_Npos_10
+  0x147: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x14d:              | Loop_12_Npos_10:
+  0x14d: 506328000000 | 	mrmovl 40(%ebx), %esi	# read val from src...
+  0x153: 50732c000000 | 	mrmovl 44(%ebx), %edi	# read val from src...
+  0x159: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x15b: 406128000000 | 	rmmovl %esi, 40(%ecx)	# ...and store it to dst
+  0x161: 716c010000   | 	jle Loop_12_Npos_11
+  0x166: c0f001000000 | 	iaddl $1, %eax
+  0x16c:              | Loop_12_Npos_11:
+  0x16c: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x16e: 40712c000000 | 	rmmovl %edi, 44(%ecx)	# ...and store it to dst
+  0x174: 717f010000   | 	jle Loop_12_Npos_12
+  0x179: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x17f:              | Loop_12_Npos_12:
+  0x17f: c0f330000000 | 	iaddl $48, %ebx
+  0x185: c0f130000000 | 	iaddl $48, %ecx
+  0x18b: c0f2f4ffffff | 	iaddl $-12, %edx
+  0x191: 7553000000   | 	jge Loop_12
+                      | 
+  0x196:              | Loop_12_Exit:
+  0x196: 6022         | 	addl %edx, %edx
+  0x198: 6022         | 	addl %edx, %edx		# %edx = 4 * (len - 8)
+  0x19a: 5062f0030000 | 	mrmovl Table(%edx), %esi
+  0x1a0: a06f         | 	pushl %esi
+  0x1a2: 90           | 	ret
+                      | 
+                      | # Handle the number of remaining elements according to whether it is even or odd.
+                      | # to maximize code reuse (minimize the space)
+                      | # while in the meantime minimizing the load-and-use hazzard to maximize the speed.
+                      | 
+                      | # When len is even,
+  0x1a3:              | Remain_10:
+  0x1a3: 506324000000 | 	mrmovl 36(%ebx), %esi	# read val from src...
+  0x1a9: 507320000000 | 	mrmovl 32(%ebx), %edi	# read val from src...
+  0x1af: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x1b1: 406124000000 | 	rmmovl %esi, 36(%ecx)	# ...and store it to dst
+  0x1b7: 71c2010000   | 	jle Remain_10_Npos_10
+  0x1bc: c0f001000000 | 	iaddl $1, %eax
+  0x1c2:              | Remain_10_Npos_10:
+  0x1c2: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x1c4: 407120000000 | 	rmmovl %edi, 32(%ecx)	# ...and store it to dst
+  0x1ca: 71d5010000   | 	jle Remain_8
+  0x1cf: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x1d5:              | Remain_8:
+  0x1d5: 50631c000000 | 	mrmovl 28(%ebx), %esi	# read val from src...
+  0x1db: 507318000000 | 	mrmovl 24(%ebx), %edi	# read val from src...
+  0x1e1: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x1e3: 40611c000000 | 	rmmovl %esi, 28(%ecx)	# ...and store it to dst
+  0x1e9: 71f4010000   | 	jle Remain_8_Npos_8
+  0x1ee: c0f001000000 | 	iaddl $1, %eax
+  0x1f4:              | Remain_8_Npos_8:
+  0x1f4: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x1f6: 407118000000 | 	rmmovl %edi, 24(%ecx)	# ...and store it to dst
+  0x1fc: 7107020000   | 	jle Remain_6
+  0x201: c0f001000000 | 	iaddl $1, %eax
+                      | 
+                      | 
+  0x207:              | Remain_6:
+  0x207: 506314000000 | 	mrmovl 20(%ebx), %esi	# read val from src...
+  0x20d: 507310000000 | 	mrmovl 16(%ebx), %edi	# read val from src...
+  0x213: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x215: 406114000000 | 	rmmovl %esi, 20(%ecx)	# ...and store it to dst
+  0x21b: 7126020000   | 	jle Remain_6_Npos_6
+  0x220: c0f001000000 | 	iaddl $1, %eax
+  0x226:              | Remain_6_Npos_6:
+  0x226: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x228: 407110000000 | 	rmmovl %edi, 16(%ecx)	# ...and store it to dst
+  0x22e: 7139020000   | 	jle Remain_4
+  0x233: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x239:              | Remain_4:
+  0x239: 50630c000000 | 	mrmovl 12(%ebx), %esi	# read val from src...
+  0x23f: 507308000000 | 	mrmovl 8(%ebx), %edi	# read val from src...
+  0x245: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x247: 40610c000000 | 	rmmovl %esi, 12(%ecx)	# ...and store it to dst
+  0x24d: 7158020000   | 	jle Remain_6_Npos_4
+  0x252: c0f001000000 | 	iaddl $1, %eax
+  0x258:              | Remain_6_Npos_4:
+  0x258: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x25a: 407108000000 | 	rmmovl %edi, 8(%ecx)	# ...and store it to dst
+  0x260: 716b020000   | 	jle Remain_2
+  0x265: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x26b:              | Remain_2:
+  0x26b: 506304000000 | 	mrmovl 4(%ebx), %esi	# read val from src...
+  0x271: 507300000000 | 	mrmovl (%ebx), %edi	# read val from src...
+  0x277: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x279: 406104000000 | 	rmmovl %esi, 4(%ecx)	# ...and store it to dst
+  0x27f: 718a020000   | 	jle Remain_6_Npos_2
+  0x284: c0f001000000 | 	iaddl $1, %eax
+  0x28a:              | Remain_6_Npos_2:
+  0x28a: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x28c: 407100000000 | 	rmmovl %edi, (%ecx)	# ...and store it to dst
+  0x292: 71b5030000   | 	jle Done
+  0x297: c0f001000000 | 	iaddl $1, %eax
+  0x29d: 70b5030000   |     jmp Done
+                      | 
+                      | # When len is odd,
+  0x2a2:              | Remain_11:
+  0x2a2: 506328000000 | 	mrmovl 40(%ebx), %esi	# read val from src...
+  0x2a8: 507324000000 | 	mrmovl 36(%ebx), %edi	# read val from src...
+  0x2ae: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x2b0: 406128000000 | 	rmmovl %esi, 40(%ecx)	# ...and store it to dst
+  0x2b6: 71c1020000   | 	jle Remain_11_Npos
+  0x2bb: c0f001000000 | 	iaddl $1, %eax
+  0x2c1:              | Remain_11_Npos:
+  0x2c1: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x2c3: 407124000000 | 	rmmovl %edi, 36(%ecx)	# ...and store it to dst
+  0x2c9: 71d4020000   | 	jle Remain_9
+  0x2ce: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x2d4:              | Remain_9:
+  0x2d4: 506320000000 | 	mrmovl 32(%ebx), %esi	# read val from src...
+  0x2da: 50731c000000 | 	mrmovl 28(%ebx), %edi	# read val from src...
+  0x2e0: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x2e2: 406120000000 | 	rmmovl %esi, 32(%ecx)	# ...and store it to dst
+  0x2e8: 71f3020000   | 	jle Remain_9_Npos
+  0x2ed: c0f001000000 | 	iaddl $1, %eax
+  0x2f3:              | Remain_9_Npos:
+  0x2f3: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x2f5: 40711c000000 | 	rmmovl %edi, 28(%ecx)	# ...and store it to dst
+  0x2fb: 7106030000   | 	jle Remain_7
+  0x300: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x306:              | Remain_7:
+  0x306: 506318000000 | 	mrmovl 24(%ebx), %esi	# read val from src...
+  0x30c: 507314000000 | 	mrmovl 20(%ebx), %edi	# read val from src...
+  0x312: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x314: 406118000000 | 	rmmovl %esi, 24(%ecx)	# ...and store it to dst
+  0x31a: 7125030000   | 	jle Remain_7_Npos_1
+  0x31f: c0f001000000 | 	iaddl $1, %eax
+  0x325:              | Remain_7_Npos_1:
+  0x325: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x327: 407114000000 | 	rmmovl %edi, 20(%ecx)	# ...and store it to dst
+  0x32d: 7138030000   | 	jle Remain_5
+  0x332: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x338:              | Remain_5:
+  0x338: 506310000000 | 	mrmovl 16(%ebx), %esi	# read val from src...
+  0x33e: 50730c000000 | 	mrmovl 12(%ebx), %edi	# read val from src...
+  0x344: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x346: 406110000000 | 	rmmovl %esi, 16(%ecx)	# ...and store it to dst
+  0x34c: 7157030000   | 	jle Remain_7_Npos_3
+  0x351: c0f001000000 | 	iaddl $1, %eax
+  0x357:              | Remain_7_Npos_3:
+  0x357: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x359: 40710c000000 | 	rmmovl %edi, 12(%ecx)	# ...and store it to dst
+  0x35f: 716a030000   | 	jle Remain_3
+  0x364: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x36a:              | Remain_3:
+  0x36a: 506308000000 | 	mrmovl 8(%ebx), %esi	# read val from src...
+  0x370: 507304000000 | 	mrmovl 4(%ebx), %edi	# read val from src...
+  0x376: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x378: 406108000000 | 	rmmovl %esi, 8(%ecx)	# ...and store it to dst
+  0x37e: 7189030000   | 	jle Remain_7_Npos_5
+  0x383: c0f001000000 | 	iaddl $1, %eax
+  0x389:              | Remain_7_Npos_5:
+  0x389: 6277         | 	andl %edi, %edi		# val <= 0?
+  0x38b: 407104000000 | 	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+  0x391: 719c030000   | 	jle Remain_1
+  0x396: c0f001000000 | 	iaddl $1, %eax
+                      | 
+  0x39c:              | Remain_1:
+  0x39c: 506300000000 | 	mrmovl (%ebx), %esi	# read val from src...
+  0x3a2: 406100000000 | 	rmmovl %esi, (%ecx)	# ...and store it to dst
+  0x3a8: 6266         | 	andl %esi, %esi		# val <= 0?
+  0x3aa: 71b5030000   | 	jle Done
+  0x3af: c0f001000000 | 	iaddl $1, %eax
+                      | 
+                      | ##################################################################
+                      | # Do not modify the following section of code
+                      | # Function epilogue.
+  0x3b5:              | Done:
+  0x3b5: b07f         | 	popl %edi               # Restore callee-save registers
+  0x3b7: b03f         | 	popl %ebx
+  0x3b9: b06f         | 	popl %esi
+  0x3bb: 2054         | 	rrmovl %ebp, %esp
+  0x3bd: b05f         | 	popl %ebp
+  0x3bf: 90           | 	ret
+                      | ##################################################################
+                      | # Keep the following label at the end of your function
+  0x3c0:              | 	.align 4
+  0x3c0: b5030000     | 	.long Done
+  0x3c4: 9c030000     | 	.long Remain_1
+  0x3c8: 6b020000     | 	.long Remain_2
+  0x3cc: 6a030000     | 	.long Remain_3
+  0x3d0: 39020000     | 	.long Remain_4
+  0x3d4: 38030000     | 	.long Remain_5
+  0x3d8: 07020000     | 	.long Remain_6
+  0x3dc: 06030000     | 	.long Remain_7
+  0x3e0: d5010000     | 	.long Remain_8
+  0x3e4: d4020000     | 	.long Remain_9
+  0x3e8: a3010000     | 	.long Remain_10
+  0x3ec: a2020000     | 	.long Remain_11
+  0x3f0:              | Table:
+                      | 
+  0x3f0:              | End:
+                      | #/* $end ncopy-ys */
+  0x3f0:              | EndFun:
+>>>>>>> dev-purewhite
                       | 
                       | ###############################
                       | # Source and destination blocks 
                       | ###############################
+<<<<<<< HEAD
   0x090:              | 	.align 4
   0x090:              | src:
   0x090: ffffffff     | 	.long -1
@@ -114,3 +416,44 @@
   0x104: 00000000     | 	.long 0
                       | 
   0x108:              | Stack:
+=======
+  0x3f0:              | 	.align 4
+  0x3f0:              | src:
+  0x3f0: 01000000     | 	.long 1
+  0x3f4: 02000000     | 	.long 2
+  0x3f8: fdffffff     | 	.long -3
+  0x3fc: fcffffff     | 	.long -4
+  0x400: fadebc00     | 	.long 0xbcdefa # This shouldn't get moved
+                      | 
+  0x410:              | 	.align 16
+  0x410:              | Predest:
+  0x410: fadebc00     | 	.long 0xbcdefa
+  0x414:              | dest:
+  0x414: abefcd00     | 	.long 0xcdefab
+  0x418: abefcd00     | 	.long 0xcdefab
+  0x41c: abefcd00     | 	.long 0xcdefab
+  0x420: abefcd00     | 	.long 0xcdefab
+  0x424:              | Postdest:
+  0x424: bcfade00     | 	.long 0xdefabc
+                      | 
+  0x428:              | .align 4
+                      | # Run time stack
+  0x428: 00000000     | 	.long 0
+  0x42c: 00000000     | 	.long 0
+  0x430: 00000000     | 	.long 0
+  0x434: 00000000     | 	.long 0
+  0x438: 00000000     | 	.long 0
+  0x43c: 00000000     | 	.long 0
+  0x440: 00000000     | 	.long 0
+  0x444: 00000000     | 	.long 0
+  0x448: 00000000     | 	.long 0
+  0x44c: 00000000     | 	.long 0
+  0x450: 00000000     | 	.long 0
+  0x454: 00000000     | 	.long 0
+  0x458: 00000000     | 	.long 0
+  0x45c: 00000000     | 	.long 0
+  0x460: 00000000     | 	.long 0
+  0x464: 00000000     | 	.long 0
+                      | 
+  0x468:              | Stack:
+>>>>>>> dev-purewhite

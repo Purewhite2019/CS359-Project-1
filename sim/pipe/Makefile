@@ -23,7 +23,11 @@ TKINC=-isystem /usr/include/tcl8.5
 # flags.
 
 CC=gcc
+<<<<<<< HEAD
 CFLAGS=-Wall -O2
+=======
+CFLAGS=-Wall -O2 -DUSE_INTERP_RESULT
+>>>>>>> dev-purewhite
 
 ##################################################
 # You shouldn't need to modify anything below here

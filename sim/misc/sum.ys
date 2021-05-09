@@ -1,0 +1,79 @@
+# Written by Purewhite: purewhite@sjtu.edu.cn
+# Using cdecl
+# Since "ret $4" doesn`t works at all,
+# we will use "iaddl" to conveniently free the space used by params
+
+.pos 0
+    irmovl stack, %esp
+    irmovl stack, %ebp
+    call Main
+    halt
+
+# Sample linked list
+.align 4
+ele1:
+    .long 0x00a
+    .long ele2
+ele2:
+    .long 0x0b0
+    .long ele3
+ele3:
+    .long 0xc00
+    .long 0    
+
+Main:
+    # Function prologue
+    pushl %ebp
+    rrmovl %esp, %ebp
+
+    # Function body
+    irmovl ele1, %eax
+    pushl %eax
+    call Sum
+    iaddl $4, %esp  # "ret $4" doesn`t works at all.
+                    # We must use "iaddl" to conveniently free the space used by params
+
+    # Function epilogue
+	rrmovl %ebp,%esp
+	popl %ebp
+	ret 
+
+# sum(list_ptr ls), list_ptr ls in %edi
+Sum:
+    # Function prologue
+    # Save stack pointers
+    pushl %ebp
+    rrmovl %esp, %ebp
+    # Save callee-save regs
+    pushl %ebx
+    pushl %edi
+    # %edi = ls
+    mrmovl 8(%ebp), %edi
+
+    # Function body
+    # int val = 0
+    xorl %eax, %eax
+    jmp Sum_test
+Sum_loop:
+    # ebx = *edi
+    mrmovl (%edi), %ebx 
+    # val = val + *edi
+    addl %ebx, %eax
+    # edi = edi->next
+    mrmovl 4(%edi), %edi
+Sum_test:
+    #if (edi != nullptr) goto Sum_loop;
+    andl %edi, %edi
+    jne Sum_loop
+
+    # Function epilogue
+    # Restore callee-save registers
+    popl %edi
+    popl %ebx
+    # Restore stack pointers
+    rrmovl %ebp, %esp
+    popl %ebp
+    ret   # It seems that "ret $Val" doesn`t works at all!
+
+.pos 0x100
+stack:

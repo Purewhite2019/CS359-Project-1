@@ -1,5 +1,9 @@
 CC=gcc
+<<<<<<< HEAD
 CFLAGS=-Wall -O2
+=======
+CFLAGS=-Wall -O2 -DUSE_INTERP_RESULT
+>>>>>>> dev-purewhite
 
 ISADIR = ../misc
 YAS=$(ISADIR)/yas
