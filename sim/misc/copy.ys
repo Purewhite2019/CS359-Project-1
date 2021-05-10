@@ -34,7 +34,7 @@ Main:
     pushl %eax
 
     call Copy
-    iaddl $12, %esp  # "ret $4" doesn`t works at all.
+    iaddl $12, %esp  # "ret $12" doesn`t works at all.
                     # We must use "iaddl" to conveniently free the space used by params
 
     # Function epilogue
