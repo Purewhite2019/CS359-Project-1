@@ -48,10 +48,10 @@
                       | 
                       | ##################################################################
                       | # You can modify this portion
-                      | 	# Loop_1 header
+                      | # Initialization
   0x046: 6300         | 	xorl %eax,%eax		# count = 0;
   0x048: c0f2f4ffffff | 	iaddl $-12, %edx
-  0x04e: 7296010000   | 	jl Loop_12_Exit		# if(%edx - 8 <= 0) goto Loop_12_Exit
+  0x04e: 7296010000   | 	jl Remain_Entry		# if(%edx - 8 <= 0) goto Remain_Entry
                       | 
   0x053:              | Loop_12:
   0x053: 506300000000 | 	mrmovl (%ebx), %esi	# read val from src...
@@ -137,7 +137,7 @@
   0x18b: c0f2f4ffffff | 	iaddl $-12, %edx
   0x191: 7553000000   | 	jge Loop_12
                       | 
-  0x196:              | Loop_12_Exit:
+  0x196:              | Remain_Entry:
   0x196: 6022         | 	addl %edx, %edx
   0x198: 6022         | 	addl %edx, %edx		# %edx = 4 * (len - 8)
   0x19a: 5062f0030000 | 	mrmovl Table(%edx), %esi
@@ -327,64 +327,64 @@
   0x3f0:              | src:
   0x3f0: ffffffff     | 	.long -1
   0x3f4: feffffff     | 	.long -2
-  0x3f8: 03000000     | 	.long 3
+  0x3f8: fdffffff     | 	.long -3
   0x3fc: 04000000     | 	.long 4
   0x400: fbffffff     | 	.long -5
-  0x404: faffffff     | 	.long -6
-  0x408: f9ffffff     | 	.long -7
+  0x404: 06000000     | 	.long 6
+  0x408: 07000000     | 	.long 7
   0x40c: f8ffffff     | 	.long -8
   0x410: 09000000     | 	.long 9
   0x414: 0a000000     | 	.long 10
-  0x418: 0b000000     | 	.long 11
-  0x41c: 0c000000     | 	.long 12
-  0x420: f3ffffff     | 	.long -13
-  0x424: f2ffffff     | 	.long -14
+  0x418: f5ffffff     | 	.long -11
+  0x41c: f4ffffff     | 	.long -12
+  0x420: 0d000000     | 	.long 13
+  0x424: 0e000000     | 	.long 14
   0x428: f1ffffff     | 	.long -15
-  0x42c: f0ffffff     | 	.long -16
-  0x430: 11000000     | 	.long 17
+  0x42c: 10000000     | 	.long 16
+  0x430: efffffff     | 	.long -17
   0x434: 12000000     | 	.long 18
   0x438: edffffff     | 	.long -19
-  0x43c: 14000000     | 	.long 20
-  0x440: 15000000     | 	.long 21
+  0x43c: ecffffff     | 	.long -20
+  0x440: ebffffff     | 	.long -21
   0x444: 16000000     | 	.long 22
-  0x448: 17000000     | 	.long 23
+  0x448: e9ffffff     | 	.long -23
   0x44c: 18000000     | 	.long 24
-  0x450: 19000000     | 	.long 25
-  0x454: e6ffffff     | 	.long -26
-  0x458: e5ffffff     | 	.long -27
-  0x45c: 1c000000     | 	.long 28
-  0x460: 1d000000     | 	.long 29
+  0x450: e7ffffff     | 	.long -25
+  0x454: 1a000000     | 	.long 26
+  0x458: 1b000000     | 	.long 27
+  0x45c: e4ffffff     | 	.long -28
+  0x460: e3ffffff     | 	.long -29
   0x464: e2ffffff     | 	.long -30
-  0x468: e1ffffff     | 	.long -31
-  0x46c: e0ffffff     | 	.long -32
-  0x470: dfffffff     | 	.long -33
-  0x474: deffffff     | 	.long -34
-  0x478: 23000000     | 	.long 35
+  0x468: 1f000000     | 	.long 31
+  0x46c: 20000000     | 	.long 32
+  0x470: 21000000     | 	.long 33
+  0x474: 22000000     | 	.long 34
+  0x478: ddffffff     | 	.long -35
   0x47c: 24000000     | 	.long 36
   0x480: 25000000     | 	.long 37
-  0x484: daffffff     | 	.long -38
-  0x488: d9ffffff     | 	.long -39
+  0x484: 26000000     | 	.long 38
+  0x488: 27000000     | 	.long 39
   0x48c: 28000000     | 	.long 40
   0x490: d7ffffff     | 	.long -41
-  0x494: 2a000000     | 	.long 42
-  0x498: d5ffffff     | 	.long -43
-  0x49c: 2c000000     | 	.long 44
-  0x4a0: d3ffffff     | 	.long -45
+  0x494: d6ffffff     | 	.long -42
+  0x498: 2b000000     | 	.long 43
+  0x49c: d4ffffff     | 	.long -44
+  0x4a0: 2d000000     | 	.long 45
   0x4a4: 2e000000     | 	.long 46
-  0x4a8: 2f000000     | 	.long 47
+  0x4a8: d1ffffff     | 	.long -47
   0x4ac: d0ffffff     | 	.long -48
-  0x4b0: cfffffff     | 	.long -49
+  0x4b0: 31000000     | 	.long 49
   0x4b4: 32000000     | 	.long 50
   0x4b8: 33000000     | 	.long 51
   0x4bc: 34000000     | 	.long 52
-  0x4c0: cbffffff     | 	.long -53
+  0x4c0: 35000000     | 	.long 53
   0x4c4: caffffff     | 	.long -54
   0x4c8: 37000000     | 	.long 55
   0x4cc: c8ffffff     | 	.long -56
-  0x4d0: 39000000     | 	.long 57
-  0x4d4: 3a000000     | 	.long 58
+  0x4d0: c7ffffff     | 	.long -57
+  0x4d4: c6ffffff     | 	.long -58
   0x4d8: c5ffffff     | 	.long -59
-  0x4dc: 3c000000     | 	.long 60
+  0x4dc: c4ffffff     | 	.long -60
   0x4e0: c3ffffff     | 	.long -61
   0x4e4: c2ffffff     | 	.long -62
   0x4e8: c1ffffff     | 	.long -63

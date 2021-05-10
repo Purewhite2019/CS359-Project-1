@@ -70,18 +70,22 @@ intsig FJNE		'C_NE'
 intsig FJGE		'C_GE'
 intsig FJG		'C_G'
 ##### Symbolic represenations of combinations of Y86 conditional code, added by Qi Liu(519021910529)
-# boolsig CLE		'(GET_SF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^GET_OF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in)))|GET_ZF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))'
-# boolsig CL		'GET_SF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^GET_OF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))'
-# boolsig CE		'GET_ZF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))'
-# boolsig CNE		'GET_ZF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^1'
-# boolsig CGE		'GET_SF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^GET_OF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^1'
-# boolsig CG		'(GET_SF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^GET_OF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^1)&(GET_ZF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^1)'
-boolsig CLE		'(GET_SF(cc_in)^GET_OF(cc_in))|GET_ZF(cc_in)'
-boolsig CL		'GET_SF(cc_in)^GET_OF(cc_in)'
-boolsig CE		'GET_ZF(cc_in)'
-boolsig CNE		'GET_ZF(cc_in)^1'
-boolsig CGE		'GET_SF(cc_in)^GET_OF(cc_in)^1'
-boolsig CG		'(GET_SF(cc_in)^GET_OF(cc_in)^1)&(GET_ZF(cc_in)^1)'
+boolsig CLE		'(GET_SF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^GET_OF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in)))|GET_ZF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))'
+boolsig CL		'GET_SF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^GET_OF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))'
+boolsig CE		'GET_ZF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))'
+boolsig CNE		'GET_ZF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^1'
+boolsig CGE		'GET_SF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^GET_OF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^1'
+boolsig CG		'(GET_SF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^GET_OF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^1)&(GET_ZF(((id_ex_curr->icode == I_ALU || id_ex_curr->icode ==  I_IADDL) ? compute_cc(gen_alufun(), gen_aluA(), gen_aluB()) : cc_in))^1)'
+
+# Abandoned. Due to the inner implementation of the simulator, 
+# $cc cannot be used in IF since it is not updated until do_ex_stage() is done.
+# do_ex_stage() is called after do_if_stage().
+# boolsig CLE		'(GET_SF(cc_in)^GET_OF(cc_in))|GET_ZF(cc_in)'
+# boolsig CL		'GET_SF(cc_in)^GET_OF(cc_in)'
+# boolsig CE		'GET_ZF(cc_in)'
+# boolsig CNE		'GET_ZF(cc_in)^1'
+# boolsig CGE		'GET_SF(cc_in)^GET_OF(cc_in)^1'
+# boolsig CG		'(GET_SF(cc_in)^GET_OF(cc_in)^1)&(GET_ZF(cc_in)^1)'
 
 ##### Symbolic representation of Y86 Registers referenced      #####
 intsig RESP     'REG_ESP'    	     # Stack Pointer

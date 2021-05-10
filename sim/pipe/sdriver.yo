@@ -48,10 +48,10 @@
                       | 
                       | ##################################################################
                       | # You can modify this portion
-                      | 	# Loop_1 header
+                      | # Initialization
   0x046: 6300         | 	xorl %eax,%eax		# count = 0;
   0x048: c0f2f4ffffff | 	iaddl $-12, %edx
-  0x04e: 7296010000   | 	jl Loop_12_Exit		# if(%edx - 8 <= 0) goto Loop_12_Exit
+  0x04e: 7296010000   | 	jl Remain_Entry		# if(%edx - 8 <= 0) goto Remain_Entry
                       | 
   0x053:              | Loop_12:
   0x053: 506300000000 | 	mrmovl (%ebx), %esi	# read val from src...
@@ -137,7 +137,7 @@
   0x18b: c0f2f4ffffff | 	iaddl $-12, %edx
   0x191: 7553000000   | 	jge Loop_12
                       | 
-  0x196:              | Loop_12_Exit:
+  0x196:              | Remain_Entry:
   0x196: 6022         | 	addl %edx, %edx
   0x198: 6022         | 	addl %edx, %edx		# %edx = 4 * (len - 8)
   0x19a: 5062f0030000 | 	mrmovl Table(%edx), %esi
@@ -326,8 +326,8 @@
   0x3f0:              | 	.align 4
   0x3f0:              | src:
   0x3f0: 01000000     | 	.long 1
-  0x3f4: 02000000     | 	.long 2
-  0x3f8: fdffffff     | 	.long -3
+  0x3f4: feffffff     | 	.long -2
+  0x3f8: 03000000     | 	.long 3
   0x3fc: fcffffff     | 	.long -4
   0x400: fadebc00     | 	.long 0xbcdefa # This shouldn't get moved
                       | 

@@ -31,10 +31,10 @@ ncopy:	pushl %ebp		# Save old frame pointer
 
 ##################################################################
 # You can modify this portion
-	# Loop_1 header
+# Initialization
 	xorl %eax,%eax		# count = 0;
 	iaddl $-12, %edx
-	jl Loop_12_Exit		# if(%edx - 8 <= 0) goto Loop_12_Exit
+	jl Remain_Entry		# if(%edx - 8 <= 0) goto Remain_Entry
 
 Loop_12:
 	mrmovl (%ebx), %esi	# read val from src...
@@ -120,7 +120,7 @@ Loop_12_Npos_12:
 	iaddl $-12, %edx
 	jge Loop_12
 
-Loop_12_Exit:
+Remain_Entry:
 	addl %edx, %edx
 	addl %edx, %edx		# %edx = 4 * (len - 8)
 	mrmovl Table(%edx), %esi
